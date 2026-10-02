@@ -61,7 +61,7 @@ else independently; nothing is migrated or imported from it.
 | Backend | **Firebase** (Auth + Firestore + Hosting) in a **new Firebase project** dedicated to Paddle District. **Host-device** architecture (§5). |
 | Repo | **New GitHub repository** for Paddle District. |
 | Relationship to v1 | **Rebuild with separate data** — no shared code, Firebase project, users, or data with v1 (original owner's project); v1 is inspiration only. |
-| Environments | **Local** (emulators), **test** and **production** — two Firebase projects owned by the user, created only on explicit go-ahead. |
+| Environments | **Two only:** **Local** (Firebase emulators, `demo-paddle-district`) and **Live** — the user's own Firebase project `paddle-district-v2` (Firestore in `asia-southeast1`), served at https://paddle-district-v2.web.app. |
 | Brand palette | Greens `#273635 #384d3e #4e5650 #577047 #5d814c` + one accent, pickleball yellow-green `~#c9d64a` (§7). |
 
 ## 3. Scope

@@ -10,8 +10,14 @@ app (`app.html` open-play session, `view.html` public live view with QR,
 `dashboard.html` sessions) on this repo's `main` branch and in the sibling
 checkout `../paddle-district`. v1 is inspiration for the court/queue mechanics
 only — **v2 shares no code, Firebase project, users, or data with v1** (v1 uses
-the original owner's Firebase project; v2 uses its own test + production
-projects). Repo: `jvallno/paddle-district` (a fork); v2 work happens on `next`.
+the original owner's Firebase project; v2 uses its own live project
+`paddle-district-v2`). Repo: `jvallno/paddle-district` (a fork); v2 work happens on `next`.
+
+**Two environments only:** local (emulators) and live
+(https://paddle-district-v2.web.app). Deploy from the CLI, only on an explicit
+request: `npx --prefix rules-tests firebase deploy --only firestore:rules` /
+`--only hosting` (hosting's predeploy refuses without the gitignored
+`lib/firebase-config.js`). Afterwards read the rules back and diff served files.
 
 > **📍 Check [docs/INDEX.md](docs/INDEX.md) first.** It's the one-page map of every
 > spec, plan, feature, and key decision — scan it before searching docs or code,

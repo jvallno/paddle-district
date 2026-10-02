@@ -7,7 +7,7 @@
     "public": ".",
     "predeploy": ["test -f lib/firebase-config.js || (echo 'lib/firebase-config.js is missing — copy lib/firebase-config.example.js' && exit 1)"],
     "headers": [
-      { "source": "**/*.@(js|css|html)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+      { "source": "**", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
     ],
     "ignore": [
       "firebase.json",

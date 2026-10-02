@@ -1724,7 +1724,7 @@ git add AGENTS.md docs/INDEX.md docs/superpowers/specs/2026-10-03-profiles-and-l
 git commit -m "docs: run/test with emulators, index plan 2, spec deltas"
 ```
 
-### Task 5: Go live — create the Firebase project (⚠ user go-ahead required)
+### Task 5: Go live — create the Firebase project (⚠ user go-ahead required) — ✅ done 2026-10-03: `paddle-district-v2`, asia-southeast1, live at https://paddle-district-v2.web.app
 
 **Executed by the controller (Opus) personally, never a subagent. Do not start until the user explicitly says to create the Firebase project.** This step is outward-facing (AGENTS.md: deploy only on explicit request, verify after deploying).
 
