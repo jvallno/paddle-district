@@ -21,3 +21,4 @@
   .topbar { gap: 6px; padding-inline: 12px; }
   .topbar__name { font-size: 0.95rem; }
 }
+.theme-toggle--on-dark:focus-visible { outline-color: var(--color-accent); } /* the page's army focus color would vanish on the army header */

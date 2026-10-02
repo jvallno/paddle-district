@@ -6,6 +6,7 @@ import { avatarHtml } from '../../lib/avatar.js';
 import { suggestHandle } from '../../lib/handle.js';
 import { NAME_MAX, DEFAULT_SELF_RATING, cleanName, validateProfileInput } from '../../lib/profile-input.js';
 import { createProfile, isHandleTaken } from '../../lib/profiles.js';
+import { signOut } from '../../lib/auth.js';
 import { ratingFieldHtml, wireRatingField, showErrors, focusFirstError } from '../shared/rating-field.js';
 
 const CHECK_DELAY_MS = 400;
@@ -35,6 +36,7 @@ export function init(container) {
         ${ratingFieldHtml(DEFAULT_SELF_RATING)}
         <button class="btn btn--primary" type="submit">Create profile</button>
       </form>
+      <button type="button" class="btn btn--ghost setup__switch" id="switch-account">Not ${name || 'you'}? Use a different Google account</button>
     </section>`;
 
   const form = container.querySelector('form');
@@ -92,6 +94,10 @@ export function init(container) {
       submit.disabled = false;
       submit.textContent = 'Create profile';
     }
+  });
+
+  container.querySelector('#switch-account').addEventListener('click', () => {
+    signOut().catch((err) => showToast(`Could not sign out: ${err.message}`, 'error'));
   });
 
   container.addEventListener('view:teardown', () => { clearTimeout(timer); slowTimers.forEach(clearTimeout); }, { once: true });
