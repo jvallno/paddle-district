@@ -51,7 +51,8 @@ Task 2, Step 0). On localhost the app uses **LIVE data by default** (project
 `paddle-district-v2`; needs the gitignored `lib/firebase-config.js`); add `?emulators`
 to use the emulator sandbox. A corner badge shows "LIVE DATA" or "Sandbox · emulators".
 **Caveat:** anything done on localhost in live mode is real (e.g. @handles can never
-be deleted). Rules tests always use the emulator; automated browser checks must use `?emulators`.
+be deleted). Develop unmerged schema/engine changes with `?emulators`: in live mode, local code writes to production. On localhost in live mode, writes made while offline are queued in IndexedDB and replay to production on the next live-mode load. Only `localhost`/`127.0.0.1` count as local — opening the dev server by LAN IP or [::1] uses live data with no badge, and `?emulators` is ignored.
+Rules tests always use the emulator; automated browser checks must use `?emulators`.
 
 Always run `npm test` (and `npm run test:rules` after any `firestore.rules`
 change) before claiming a change is done. Verify on **localhost first**; only
@@ -71,7 +72,7 @@ docs/superpowers/   # specs/ (design) and plans/ (implementation) per feature
 
 ### `lib/` — two kinds of module
 
-- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`, `profile-input`, `route-access`, `avatar`, `session`, `theme-choice` (light/dark choice), `data-mode` (live vs emulators).
+- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`, `profile-input`, `route-access`, `avatar`, `session`, `theme-choice` (light/dark choice), `data-mode` (live vs emulators), `app-url` (links that keep the sandbox flag).
   **These have `tests/*.test.js` and must stay import-free of DOM/Firebase** so
   they run under `node --test`. Put all game/queue/ranking rules here and test
   them — that's where the bugs hide.

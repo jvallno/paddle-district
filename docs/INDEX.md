@@ -15,7 +15,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 |---|---|---|
 | Stack | Vanilla JS ES modules, **no build step**; CDN imports; node `--test` for pure logic. | `AGENTS.md` → Stack & ground rules |
 | Queue engine | `step()` in `lib/queue-engine.js` — pure; derives courts from `matches`, fills free courts per mode (fairness/stacking) and court rule; host commits its output. | `lib/queue-engine.js` header, spec §5 |
-| Game rules (pure) | `handle`, `profile-input`, `route-access`, `avatar`, `session`, `score-flow`, `session-stats`, `team-balance`, `results` in `lib/`, each with `tests/*.test.js`. | the module headers |
+| Game rules (pure) | `handle`, `profile-input`, `route-access`, `avatar`, `session`, `score-flow`, `session-stats`, `team-balance`, `results`, `theme-choice`, `data-mode`, `app-url` in `lib/`, each with `tests/*.test.js`. | the module headers |
 | Layout | `index.html` → `lib/app.js` (hash router); `features/<name>/` UI; `lib/` services + pure logic; `styles/` tokens. | `AGENTS.md` → Architecture |
 | Rendering | `html` tagged template auto-escapes every `${}`; guard test blocks bare arrays → `innerHTML` and direct `escapeHtml` imports. | `lib/html.js`, `tests/html-usage.test.js` |
 | Auth & routing | `lib/app.js` watches auth + profile → `lib/session.js`; `resolveRoute()` decides signin/setup/ready screens; signed-out deep links resume after sign-in. | `lib/route-access.js`, `lib/session.js` |
@@ -54,7 +54,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 
 | Date | Decision | Why |
 |---|---|---|
-| 2026-10-03 | Renamed to **Paddle District** (v2); code lives in the fork `jvallno/paddle-district` on branch `next`, v1 untouched on `main`. Environments: **local** (emulators) and **live** (`paddle-district-v2`, user-owned). | Continue the Paddle District name; keep v1 running until switch-over; never touch the original owner's Firebase project. |
+| 2026-10-03 | Renamed to **Paddle District** (v2); code lives in the fork `jvallno/paddle-district` on branch `next`, v1 untouched on `main`. Environments: **local** (live data by default; `?emulators` sandbox) and **live** (`paddle-district-v2`, user-owned). | Continue the Paddle District name; keep v1 running until switch-over; never touch the original owner's Firebase project. |
 | 2026-10-03 | Same zero-build vanilla-JS setup as inventory-tracking-system. | Proven conventions, no framework churn, easy for agents to follow. |
 | 2026-10-03 | Backend = Firebase (Auth + Firestore + Hosting) in a **new** project; new GitHub repo. | Proven lessons; free tier; offline cache. |
 | 2026-10-03 | **Host-device** runs the pure queue engine; players write intents only. | No conflicting writes without Cloud Functions; engine can move server-side later unchanged. |

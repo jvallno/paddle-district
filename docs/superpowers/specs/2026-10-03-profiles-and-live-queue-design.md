@@ -250,7 +250,7 @@ attribute on `<html>`: a first visit follows the device setting, and the
 - **Toasts:** the default toast sits on army dark `#38471F`.
 
 **UI-friendly rules (all screens):** tap targets ≥ 44 px (inputs 48 px);
-text ≥ 15 px; visible focus rings; errors inline under the field (not only
+body text ≥ 15 px; labels/meta ≥ 11 px; visible focus rings; errors inline under the field (not only
 toasts) and focus moves to the first error; busy buttons say what they're
 doing and can't be double-submitted; every empty or error screen offers a next
 step; layouts work from 320 px phones up; reduced-motion respected.
