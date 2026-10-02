@@ -99,7 +99,7 @@ guest history.
 
 | Path | Contents | Written by |
 |---|---|---|
-| `results/{rid}` | `sessionId`, `matchId`, `team1[]`/`team2[]` of `{uid \| null, isGuest}`, `score {t1,t2}`, `playedAt`, `kind` (`result`\|`correction`), `corrects` (rid, for corrections) | Host, when a match becomes `confirmed` or `overridden`. **Append-only**: never updated/deleted; a later override writes a `correction` entry pointing at the original |
+| `results/{rid}` | `sessionId`, `matchId`, `team1[]`/`team2[]` of `{uid \| null, isGuest}`, `score {t1,t2}`, `playedAt`, `kind` (`result`\|`correction`), `corrects` (rid, for corrections) | Host, when a match becomes `confirmed` or `overridden`. **Append-only**: never updated/deleted; a later override writes a `correction` entry pointing at the previous entry for that match (a chain) |
 
 ### 4.4 Shape rationale
 
@@ -118,7 +118,7 @@ guest history.
 ### 5.1 Pure engine
 
 `lib/queue-engine.js` exports
-`step({ config, participants, entries, matches, now, makeId }) → { newMatches, entryUpdates, state }` — court occupancy is derived from `matches`, so no previous state or rng is needed; results-log entries come from `pendingResults()` in `lib/results.js`.
+`step({ config, participants, entries, matches, now, makeId }) → { newMatches, entryUpdates, state }` — court occupancy is derived from `matches`, so no previous state or rng is needed; results-log entries come from `pendingResults()` in `lib/results.js`. `makeId` receives context — `{kind:'match', courtId, prevMid}` / `{kind:'result', mid, sig}` — so the host can use deterministic ids.
 No DOM/Firebase; deterministic. The host calls it on every relevant
 snapshot change and on a 1 s tick for timers.
 
@@ -155,6 +155,7 @@ snapshot change and on a 1 s tick for timers.
   next two incoming players. Same max-N and tie handling.
 - In stacking mode, challengers are the next pair entry or next two solos; a
   group of 4 cannot challenge and keeps its place for the next empty court.
+- Stacking only: if winners are holding a court but no ready challengers fit, and a ready group of exactly 4 exists, the holders are released (everyone off) and that group takes the court — prevents a deadlock.
 
 ### 5.5 Court lifecycle
 

@@ -45,6 +45,12 @@ Inputs the spec implies but doesn't spell out, most likely to bite first. Each o
 - `live/state` shape: `{ mode, courts: [{ courtId, name, paused, matchId, team1, team2, startedAt, holding }], queue: [{ pids, eid?, ready? }], names, updatedAt }`. The host adds `hostDeviceId` and `version`.
 - TV route becomes `#/tv/{sid}` (the existing `parseHash` supports one param), not `#/s/{sid}/tv`.
 - Stacking fill is an include-first search for the earliest exact-fit combination of ready entries (review fix; the greedy first-fit in Task 5's original code could leave a court idle).
+- Final review: a court's winners stay only if not currently playing and that court's last match is their own latest match (no stale stayers / double-booking); equal `startedAt` ties break on `mid`.
+- Final review: stacking entries are cancelled only for an explicit `left` player, size not 1/2/4, or a repeated pid; an unknown player keeps the entry's place (not ready).
+- Final review: the duplicate-player check counts only players who have accepted, so an unanswered invite can't lock the invitee out of their own stack.
+- Final review: stacking releases held winners (everyone off) when only a ready group of exactly 4 fits, avoiding a deadlock.
+- Final review: `makeId` receives context (`{kind:'match', courtId, prevMid}` / `{kind:'result', mid, sig}`) for deterministic ids.
+- Final review: results log — a missing pid not starting with `g_` is logged as a real player `{uid: pid, isGuest:false}`; corrections point at the previous entry (a chain).
 
 ## File structure
 
