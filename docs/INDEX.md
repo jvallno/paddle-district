@@ -19,10 +19,10 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | Layout | `index.html` → `lib/app.js` (hash router); `features/<name>/` UI; `lib/` services + pure logic; `styles/` tokens. | `AGENTS.md` → Architecture |
 | Rendering | `html` tagged template auto-escapes every `${}`; guard test blocks bare arrays → `innerHTML` and direct `escapeHtml` imports. | `lib/html.js`, `tests/html-usage.test.js` |
 | Auth & routing | `lib/app.js` watches auth + profile → `lib/session.js`; `resolveRoute()` decides signin/setup/ready screens; signed-out deep links resume after sign-in. | `lib/route-access.js`, `lib/session.js` |
-| Firebase locally | localhost → emulators (`demo-pickle-boat`), never production; `npm run emulators`; rules suite `npm run test:rules`. | `lib/firebase.js`, `rules-tests/` |
+| Firebase locally | localhost → emulators (`demo-paddle-district`), never production; `npm run emulators`; rules suite `npm run test:rules`. | `lib/firebase.js`, `rules-tests/` |
 | Run / test | `npm run emulators` + `npm run serve` (localhost:5174); `npm test`; `npm run test:rules`. | `AGENTS.md` → Run / test |
 | Carried-over lessons | Deploy via CLI, rules emulator tests, uid-not-email rules, hosting ignore list, offline-tolerant writes. | `AGENTS.md` → Lessons |
-| Inspiration | `../paddle-district` — open-play session, courts, queue, live view + QR, rankings (Firebase, static pages). | sibling repo — **inspiration only; separate system, nothing shared** |
+| v1 (original app) | Paddle District v1 — static pages: open-play session, courts, queue, live view + QR, rankings (Realtime Database, original owner's Firebase project). | `main` branch of this repo / `../paddle-district` — **inspiration only; v2 shares no code or data** |
 
 ## Features (`features/<name>/`)
 
@@ -51,6 +51,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-03 | Renamed to **Paddle District** (v2); code lives in the fork `jvallno/paddle-district` on branch `next`, v1 untouched on `main`. Environments: local emulators, a test Firebase project and a production Firebase project, both owned by the user. | Continue the Paddle District name; keep v1 running until switch-over; never touch the original owner's Firebase project. |
 | 2026-10-03 | Same zero-build vanilla-JS setup as inventory-tracking-system. | Proven conventions, no framework churn, easy for agents to follow. |
 | 2026-10-03 | Backend = Firebase (Auth + Firestore + Hosting) in a **new** project; new GitHub repo. | Proven lessons; free tier; offline cache. |
 | 2026-10-03 | **Host-device** runs the pure queue engine; players write intents only. | No conflicting writes without Cloud Functions; engine can move server-side later unchanged. |

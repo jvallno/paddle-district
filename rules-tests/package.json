@@ -1,11 +1,11 @@
 {
-  "name": "pickle-boat-rules-tests",
+  "name": "paddle-district-rules-tests",
   "private": true,
   "type": "module",
   "description": "Firestore security-rules tests + local emulators. Separate from the app so the app stays zero-dependency.",
   "scripts": {
     "test": "./with-java.sh firebase emulators:exec --only firestore --project demo-rules \"node --test firestore-rules.spec.mjs\"",
-    "emulators": "./with-java.sh firebase emulators:start --only auth,firestore --project demo-pickle-boat --config ../firebase.json"
+    "emulators": "./with-java.sh firebase emulators:start --only auth,firestore --project demo-paddle-district --config ../firebase.json"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "5.0.2",

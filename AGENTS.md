@@ -1,15 +1,17 @@
 # AGENTS.md — Orientation for AI agents & contributors
 
-Pickle Boat: a web app for pickleball open play built around a **paddle
+Paddle District (v2): a web app for pickleball open play built around a **paddle
 queueing system** (fairness rotation or paddle stacking, chosen per session)
 with Reclub-style community features. Design lives in
 `docs/superpowers/specs/` — start with Spec 1 (profiles & live queue).
 
-Inspiration (only) for the court/queue mechanics: the sibling project
-`../paddle-district` (multi-page static app: `app.html` open-play session,
-`view.html` public live view with QR, `dashboard.html` sessions, Firebase).
-**Pickle Boat is a separate system** — it shares no code, Firebase project,
-users, or data with paddle-district.
+**v2 is a rebuild of the original Paddle District (v1)**: the multi-page static
+app (`app.html` open-play session, `view.html` public live view with QR,
+`dashboard.html` sessions) on this repo's `main` branch and in the sibling
+checkout `../paddle-district`. v1 is inspiration for the court/queue mechanics
+only — **v2 shares no code, Firebase project, users, or data with v1** (v1 uses
+the original owner's Firebase project; v2 uses its own test + production
+projects). Repo: `jvallno/paddle-district` (a fork); v2 work happens on `next`.
 
 > **📍 Check [docs/INDEX.md](docs/INDEX.md) first.** It's the one-page map of every
 > spec, plan, feature, and key decision — scan it before searching docs or code,
@@ -30,7 +32,7 @@ users, or data with paddle-district.
 ## Run / test
 
 ```bash
-npm run emulators   # Firebase auth + Firestore emulators (demo-pickle-boat) — needs Java 21+
+npm run emulators   # Firebase auth + Firestore emulators (demo-paddle-district) — needs Java 21+
 npm run serve       # python3 serve.py 5174 → http://localhost:5174 (no-cache)
 npm test            # node --test → unit tests for the pure lib/ modules
 npm run test:rules  # Firestore security-rules suite on the emulator

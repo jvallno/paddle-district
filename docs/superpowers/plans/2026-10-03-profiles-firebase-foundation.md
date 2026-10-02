@@ -1,5 +1,7 @@
 # Profiles & Firebase Foundation Implementation Plan (Spec 1 · Plan 2 of 3)
 
+> **Renamed 2026-10-03:** the product is now **Paddle District** (v2); "Pickle Boat" was the working title. Code snippets below predate the rename — the code in the repo is authoritative.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Players sign in with Google, set up a profile (name, unique @handle, self-rating), see their QR player card, and open other players' public profiles. Firestore security rules protect all of it and are proven by an emulator test suite.

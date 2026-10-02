@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Pickle Boat security rules — the real security boundary (UI checks are
+// Paddle District security rules — the real security boundary (UI checks are
 // cosmetic). Every change here needs rules-tests/ updated: attacks denied,
 // normal flows allowed. Users are matched by Auth uid only, never email.
 service cloud.firestore {

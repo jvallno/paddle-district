@@ -17,5 +17,5 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     with ThreadingHTTPServer(("", PORT), NoCacheHandler) as httpd:
-        print(f"Serving pickle-boat on http://localhost:{PORT} (no-cache)")
+        print(f"Serving paddle-district on http://localhost:{PORT} (no-cache)")
         httpd.serve_forever()
