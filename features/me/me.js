@@ -6,7 +6,6 @@ import { avatarHtml } from '../../lib/avatar.js';
 import { levelFor, NAME_MAX, validateProfileInput } from '../../lib/profile-input.js';
 import { updateProfile } from '../../lib/profiles.js';
 import { signOut } from '../../lib/auth.js';
-import { qrSvg } from '../../lib/qr.js';
 import { ratingFieldHtml, wireRatingField, showErrors } from '../shared/rating-field.js';
 
 // Absolute link to a public profile — what the player-card QR encodes.
@@ -24,13 +23,23 @@ function cardHtml(p) {
     </div>`;
 }
 
+// Load the QR generator lazily so a failed import can't blank the whole screen.
+async function fillQr(box, handle, isAlive) {
+  try {
+    const { qrSvg } = await import('../../lib/qr.js');
+    if (isAlive()) box.innerHTML = html`${raw(qrSvg(profileUrl(handle)))}`;
+  } catch {
+    if (isAlive()) box.textContent = 'QR code unavailable — check your connection.';
+  }
+}
+
 export function init(container) {
   const p = getSession().profile;
   container.innerHTML = html`
     <section class="page me">
       <div class="card me__card">
         <div class="me__head" data-card>${cardHtml(p)}</div>
-        <div class="me__qr">${raw(qrSvg(profileUrl(p.handle)))}</div>
+        <div class="me__qr" data-qr></div>
         <p class="me__qr-note">Organizers scan this with their phone camera to find you.</p>
       </div>
       <form class="card me__form" novalidate>
@@ -45,6 +54,9 @@ export function init(container) {
       </form>
       <button type="button" class="btn btn--ghost me__signout" id="signout">Sign out</button>
     </section>`;
+
+  let alive = true;
+  fillQr(container.querySelector('[data-qr]'), p.handle, () => alive);
 
   const form = container.querySelector('form');
   wireRatingField(form);
@@ -66,5 +78,5 @@ export function init(container) {
   // Keep the card in sync with saved edits (the form keeps what's typed).
   const head = container.querySelector('[data-card]');
   const off = onSession((s) => { if (s.profile) head.innerHTML = cardHtml(s.profile); });
-  container.addEventListener('view:teardown', off, { once: true });
+  container.addEventListener('view:teardown', () => { alive = false; off(); }, { once: true });
 }

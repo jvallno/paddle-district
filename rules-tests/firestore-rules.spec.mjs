@@ -7,7 +7,7 @@ import { test, before, after, beforeEach } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import {
-  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where,
+  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where, limit,
   writeBatch, serverTimestamp,
 } from 'firebase/firestore';
 
@@ -86,10 +86,20 @@ test('attack: invalid fields on setup', async () => {
     { displayName: '' }, { displayName: '   ' }, { displayName: 'x'.repeat(41) }, { handle: 'Ben', displayName: 'Ben' },
     { createdAt: new Date(0) },
     { photoURL: 'http://x/p.png' }, { photoURL: 'javascript:alert(1)' }, { photoURL: 'https://' + 'x'.repeat(1000) },
+    { photoURL: 'https://tracker.example/pixel.gif' }, { displayName: '\u202Eana\u200B' },
   ]) {
     const data = profile(bad);
     await assertFails(setup(as('ben'), 'ben', data, data.handle), JSON.stringify(bad));
   }
+});
+test('attack: update photoURL to a tracker URL', async () => {
+  await assertFails(updateDoc(doc(as('ana'), 'users/ana'), { photoURL: 'https://tracker.example/pixel.gif' }));
+});
+test('attack: list all profiles without a limit', async () => {
+  await assertFails(getDocs(collection(as('ben'), 'users')));
+});
+test('attack: list profiles with limit over 25', async () => {
+  await assertFails(getDocs(query(collection(as('ben'), 'users'), limit(26))));
 });
 test('attack: invalid rating on update', async () => {
   await assertFails(updateDoc(doc(as('ana'), 'users/ana'), { selfRating: 8.5 }));
@@ -147,7 +157,7 @@ test('ratings on the half-point grid from 2 to 8 are accepted', async () => {
   for (const r of [2.5, 4, 7.5, 8]) await assertSucceeds(updateDoc(doc(as('ben'), 'users/ben'), { selfRating: r }));
 });
 test('player edits name, photo and rating', async () => {
-  await assertSucceeds(updateDoc(doc(as('ana'), 'users/ana'), { displayName: 'Ana R.', photoURL: 'https://x/p.png', selfRating: 4 }));
+  await assertSucceeds(updateDoc(doc(as('ana'), 'users/ana'), { displayName: 'Ana R.', photoURL: 'https://lh3.googleusercontent.com/a/p.png', selfRating: 4 }));
 });
 test('signed-in player reads profiles and looks up a handle', async () => {
   await assertSucceeds(getDoc(doc(as('ben'), 'users/ana')));
@@ -155,5 +165,8 @@ test('signed-in player reads profiles and looks up a handle', async () => {
   await assertSucceeds(getDoc(doc(as('ben'), 'handles/nobody')));
 });
 test('signed-in player can query profiles by handle', async () => {
-  await assertSucceeds(getDocs(query(collection(as('ben'), 'users'), where('handle', '==', 'ana'))));
+  await assertSucceeds(getDocs(query(collection(as('ben'), 'users'), where('handle', '==', 'ana'), limit(1))));
+});
+test('search profiles with a limit of 25', async () => {
+  await assertSucceeds(getDocs(query(collection(as('ben'), 'users'), where('handle', '>=', 'a'), where('handle', '<', 'b'), limit(25))));
 });

@@ -22,6 +22,9 @@ test('every rating option maps to exactly one level', () => {
   assert.equal(levelFor(1), null);
 });
 
+test('cleanName strips invisible and direction characters', () => {
+  assert.equal(cleanName('\u202EAna\u200B'), 'Ana');
+});
 test('cleanName trims and collapses whitespace', () => {
   assert.equal(cleanName('  Ana   Reyes \n'), 'Ana Reyes');
   assert.equal(cleanName(null), '');

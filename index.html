@@ -25,5 +25,21 @@
   <header id="topbar" class="topbar" hidden></header>
   <main id="view"></main>
   <script type="module" src="/lib/app.js"></script>
+  <script>
+    // Fallback if the app never booted (e.g. missing config or a failed module load).
+    setTimeout(function () {
+      var boot = document.getElementById('boot');
+      if (!boot) return;
+      var msg = document.createElement('p');
+      msg.textContent = "Couldn't start Pickle Boat.";
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn--primary';
+      btn.textContent = 'Reload';
+      btn.onclick = function () { location.reload(); };
+      boot.textContent = '';
+      boot.append(msg, btn);
+    }, 15000);
+  </script>
 </body>
 </html>

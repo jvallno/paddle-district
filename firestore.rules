@@ -18,16 +18,19 @@ service cloud.firestore {
         && d.keys().hasAll(['displayName', 'handle', 'photoURL', 'selfRating', 'createdAt'])
         && d.displayName is string && d.displayName.size() >= 1 && d.displayName.size() <= 40
         && d.displayName.matches('.*\\S.*')
+        && !d.displayName.matches('.*[\\x{200B}-\\x{200F}\\x{202A}-\\x{202E}\\x{2066}-\\x{2069}\\x{FEFF}].*')
         && d.handle is string && d.handle.matches('^[a-z0-9_]{3,20}$')
         && d.photoURL is string && d.photoURL.size() <= 1000
-        && (d.photoURL == '' || d.photoURL.matches('https://.+'))
+        && (d.photoURL == '' || d.photoURL.matches('https://[a-z0-9-]+[.]googleusercontent[.]com/.*'))
         && (d.selfRating is int || d.selfRating is float)
         && d.selfRating >= 2 && d.selfRating <= 8
         && d.selfRating * 2 == math.floor(d.selfRating * 2);
     }
 
     match /users/{uid} {
-      allow read: if signedIn();
+      allow get: if signedIn();
+      // Capped listing: organizer search (Plan 3) always uses limit(<=25).
+      allow list: if signedIn() && request.query.limit <= 25;
       // Created once, in the same batch that claims handles/{handle}.
       allow create: if isSelf(uid)
         && validProfile(request.resource.data)

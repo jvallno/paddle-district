@@ -67,6 +67,7 @@ export function init(container) {
   });
   checkHandle();
 
+  const slowTimers = new Set();
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form));
@@ -75,10 +76,14 @@ export function init(container) {
     if (!ok) return;
     submit.disabled = true;
     submit.textContent = 'Creating…';
+    const slowTimer = setTimeout(() => { status.textContent = 'Waiting for a connection…'; }, 5000);
+    slowTimers.add(slowTimer);
     try {
       await createProfile(user.uid, { ...value, photoURL });
+      clearTimeout(slowTimer);
       showToast(`Welcome, ${value.displayName}!`, 'success'); // lib/app.js routes on from here
     } catch (err) {
+      clearTimeout(slowTimer);
       if (err.message === 'handle-taken') showErrors(form, { handle: `@${value.handle} was just taken — try another.` });
       else showToast(`Could not create your profile: ${err.message}`, 'error');
       submit.disabled = false;
@@ -86,5 +91,5 @@ export function init(container) {
     }
   });
 
-  container.addEventListener('view:teardown', () => clearTimeout(timer), { once: true });
+  container.addEventListener('view:teardown', () => { clearTimeout(timer); slowTimers.forEach(clearTimeout); }, { once: true });
 }
