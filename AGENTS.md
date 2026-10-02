@@ -7,11 +7,11 @@ with Reclub-style community features. Design lives in
 
 **v2 is a rebuild of the original Paddle District (v1)**: the multi-page static
 app (`app.html` open-play session, `view.html` public live view with QR,
-`dashboard.html` sessions) on this repo's `main` branch and in the sibling
+`dashboard.html` sessions), preserved on this repo's `v1` branch / `v1.0` tag and in the sibling
 checkout `../paddle-district`. v1 is inspiration for the court/queue mechanics
 only — **v2 shares no code, Firebase project, users, or data with v1** (v1 uses
 the original owner's Firebase project; v2 uses its own live project
-`paddle-district-v2`). Repo: `jvallno/paddle-district` (a fork); v2 work happens on `next`.
+`paddle-district-v2`). Repo: `jvallno/paddle-district` (a fork); v2 is `main` (since 2026-10-03); new work branches off `main`/`next` and merges back by PR **inside the fork**. Never push or open PRs to the original `sites-9400/paddle-district`.
 
 **Two environments only:** local (live data by default; `?emulators` sandbox) and live
 (https://paddle-district-v2.web.app). Deploy from the CLI, only on an explicit

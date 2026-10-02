@@ -1,8 +1,9 @@
 # Paddle District
 
 Pickleball open play built around a paddle queueing system (fairness rotation
-or paddle stacking), with player profiles and community features. This `next`
-branch is **v2**, a from-scratch rebuild; the original app (v1) lives on `main`.
+or paddle stacking), with player profiles and community features. This is
+**v2**, a from-scratch rebuild; the original app (v1) is preserved on the `v1`
+branch / `v1.0` tag.
 Vanilla JS, no build step.
 
 ```bash

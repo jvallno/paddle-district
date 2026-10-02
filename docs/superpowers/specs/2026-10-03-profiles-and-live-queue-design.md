@@ -27,7 +27,7 @@ features. It combines three goals:
 
 > **Rebuild, separate data.** This is Paddle District **v2**, a from-scratch
 > rebuild (renamed from the working title "Pickle Boat" on 2026-10-03). It lives
-> in the fork `jvallno/paddle-district` on branch `next`; v1 stays on `main`. v2
+> in the fork `jvallno/paddle-district` (v2 is the fork's `main` since 2026-10-03; v1 is preserved as branch `v1` / tag `v1.0`). v2
 > shares **no** code, database, users, or sessions with v1 or with the original
 > owner's Firebase project — v1 is only one of its inspirations.
 

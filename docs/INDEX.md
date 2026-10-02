@@ -24,7 +24,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | Brand & theme | v1 look: tokens (light + dark) in styles/tokens.css; lib/theme-choice.js (pure) + lib/theme.js; inline pre-paint script in index.html; assets/ (logo-512, favicon). | spec §7 |
 | Carried-over lessons | Deploy via CLI, rules emulator tests, uid-not-email rules, hosting ignore list, offline-tolerant writes. | `AGENTS.md` → Lessons |
 | Live server | https://paddle-district-v2.web.app — Firebase project `paddle-district-v2` (user-owned; Firestore `asia-southeast1`; Google sign-in). Deploy via CLI on explicit request only. | `AGENTS.md` → v2 note, `.firebaserc` |
-| v1 (original app) | Paddle District v1 — static pages: open-play session, courts, queue, live view + QR, rankings (Realtime Database, original owner's Firebase project). | `main` branch of this repo / `../paddle-district` — **inspiration only; v2 shares no code or data** |
+| v1 (original app) | Paddle District v1 — static pages: open-play session, courts, queue, live view + QR, rankings (Realtime Database, original owner's Firebase project). | `v1` branch / `v1.0` tag of this repo / `../paddle-district` — **inspiration only; v2 shares no code or data** |
 
 ## Features (`features/<name>/`)
 
@@ -54,7 +54,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 
 | Date | Decision | Why |
 |---|---|---|
-| 2026-10-03 | Renamed to **Paddle District** (v2); code lives in the fork `jvallno/paddle-district` on branch `next`, v1 untouched on `main`. Environments: **local** (live data by default; `?emulators` sandbox) and **live** (`paddle-district-v2`, user-owned). | Continue the Paddle District name; keep v1 running until switch-over; never touch the original owner's Firebase project. |
+| 2026-10-03 | Renamed to **Paddle District** (v2); code lives in the fork `jvallno/paddle-district`; v2 became the fork's `main` on 2026-10-03 (v1 preserved as branch `v1` / tag `v1.0`; the original sites-9400 repo is never touched). Environments: **local** (live data by default; `?emulators` sandbox) and **live** (`paddle-district-v2`, user-owned). | Continue the Paddle District name; keep v1 running until switch-over; never touch the original owner's Firebase project. |
 | 2026-10-03 | Same zero-build vanilla-JS setup as inventory-tracking-system. | Proven conventions, no framework churn, easy for agents to follow. |
 | 2026-10-03 | Backend = Firebase (Auth + Firestore + Hosting) in a **new** project; new GitHub repo. | Proven lessons; free tier; offline cache. |
 | 2026-10-03 | **Host-device** runs the pure queue engine; players write intents only. | No conflicting writes without Cloud Functions; engine can move server-side later unchanged. |
