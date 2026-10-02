@@ -99,3 +99,25 @@ test('entries stacked at the same instant are ordered by id (deterministic)', ()
   const out = run({ ...S, participants: players('a b'), entries });
   assert.deepEqual(out.state.queue.map((q) => q.eid), ['e_a', 'e_b']);
 });
+
+test('earliest-first combination: solo, pair, pair → fills court with pair+pair', () => {
+  const ps = players('a b c d e');
+  const entries = [entry('s', 'a', { at: 1 }), entry('p1', 'b c', { at: 2 }), entry('p2', 'd e', { at: 3 })];
+  const out = run({ ...S, participants: ps, entries });
+  assert.equal(out.newMatches.length, 1);
+  const teams = [out.newMatches[0].team1.sort(), out.newMatches[0].team2.sort()].sort((a, b) => a[0].localeCompare(b[0]));
+  assert.deepEqual(teams, [['b', 'c'], ['d', 'e']]);
+  assert.deepEqual(out.entryUpdates, [{ eid: 'p1', status: 'assigned' }, { eid: 'p2', status: 'assigned' }]);
+  assert.deepEqual(out.state.queue.map((q) => q.eid), ['s']);
+});
+
+test('earliest-first combination: 3 solos then pair → fills court with 2 solos + pair', () => {
+  const ps = players('a b c d e');
+  const entries = [entry('s1', 'a', { at: 1 }), entry('s2', 'b', { at: 2 }), entry('s3', 'c', { at: 3 }), entry('p', 'd e', { at: 4 })];
+  const out = run({ ...S, participants: ps, entries });
+  assert.equal(out.newMatches.length, 1);
+  const teams = [out.newMatches[0].team1.sort(), out.newMatches[0].team2.sort()].sort((a, b) => a[0].localeCompare(b[0]));
+  assert.deepEqual(teams, [['a', 'b'], ['d', 'e']]);
+  assert.deepEqual(out.entryUpdates, [{ eid: 's1', status: 'assigned' }, { eid: 's2', status: 'assigned' }, { eid: 'p', status: 'assigned' }]);
+  assert.deepEqual(out.state.queue.map((q) => q.eid), ['s3']);
+});

@@ -112,3 +112,17 @@ test('a held winner who also stacked is not double-booked on another court', () 
   assert.equal(out.newMatches.length, 1);
   assert.equal(out.state.queue.find((q) => q.eid === 's_a').ready, false);
 });
+
+test('stacking + winners stay: earliest-first fills the court, not greedy first-fit', () => {
+  // Winners a b hold c1. Queue: solo s, then pair p (ready).
+  // Greedy first-fit takes s (1 slot), leaving 1 slot empty — pair won't fit, s blocks forever.
+  // Earliest-first skips s (not ready alone), takes pair p (2 slots). s stays in queue.
+  const ps = players('a b c d e f');
+  const entries = [entry('s', 'c', { at: 1, accepted: 'c' }), entry('p', 'd e', { at: 2 })];
+  const out = run({ mode: 'stacking', rule: stay, participants: ps, entries, matches: [firstGame()], courtList: courts(1) });
+  assert.equal(out.newMatches.length, 1);
+  assert.deepEqual(out.newMatches[0].team1, ['a', 'b']);
+  assert.deepEqual([...out.newMatches[0].team2].sort(), ['d', 'e']);
+  assert.deepEqual(out.entryUpdates, [{ eid: 'p', status: 'assigned' }]);
+  assert.deepEqual(out.state.queue.map((q) => q.eid), ['s']);
+});
