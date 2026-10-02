@@ -64,6 +64,7 @@ export function init(container) {
   handleInput.addEventListener('input', () => {
     status.textContent = ''; // never leave an answer for an older value on screen
     checkId++;
+    showErrors(form, { handle: undefined });
     clearTimeout(timer);
     timer = setTimeout(checkHandle, CHECK_DELAY_MS);
   });

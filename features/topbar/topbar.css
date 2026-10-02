@@ -9,7 +9,7 @@
 .topbar[hidden] { display: none; }
 .topbar__brand { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; color: var(--color-on-dark); text-decoration: none; min-height: var(--tap); }
 .topbar__brand:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius); }
-.topbar__logo { width: 40px; height: 40px; flex: none; border-radius: var(--radius-full); background: #fff; display: grid; place-items: center; overflow: hidden; }
+.topbar__logo { width: 40px; height: 40px; flex: none; border-radius: var(--radius-full); background: var(--color-logo-bg); display: grid; place-items: center; overflow: hidden; }
 .topbar__logo img { width: 36px; height: 36px; object-fit: contain; }
 .topbar__name { font-weight: 800; font-size: 1.1rem; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .theme-toggle--on-dark { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25); color: var(--color-on-dark); }

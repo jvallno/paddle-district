@@ -6,11 +6,11 @@
 }
 .signin__top { display: flex; justify-content: flex-end; }
 .signin__card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-2); padding: var(--space-5) var(--space-4); }
-.signin__logo { width: 132px; height: 132px; object-fit: contain; border-radius: 20px; background: #fff; padding: 4px; }
+.signin__logo { width: 132px; height: 132px; object-fit: contain; border-radius: 20px; background: var(--color-logo-bg); padding: 4px; }
 .signin__title { font-size: 1.6rem; font-weight: 900; margin-top: var(--space-2); }
 .signin__tagline { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
 .signin__pitch { color: var(--color-muted); margin: var(--space-2) 0 var(--space-3); line-height: 1.6; }
-.signin__google { width: 100%; min-height: 52px; background: #fff; color: #1C1F14; border-color: var(--color-border); font-size: 1rem; }
+.signin__google { width: 100%; min-height: 52px; background: var(--color-google-bg); color: var(--color-google-ink); border-color: var(--color-border); font-size: 1rem; }
 .signin__google:hover { border-color: var(--color-primary); box-shadow: var(--shadow-md); }
 .signin__g { width: 20px; height: 20px; flex: none; }
 .signin__note { text-align: center; color: var(--color-muted); font-size: 0.85rem; }

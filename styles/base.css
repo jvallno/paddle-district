@@ -16,7 +16,7 @@ a { color: var(--color-link); }
 .num { font-variant-numeric: tabular-nums; }
 
 .boot { min-height: 100vh; display: grid; place-items: center; align-content: center; gap: var(--space-3); color: var(--color-muted); font-weight: 600; }
-.boot__logo { width: 88px; height: 88px; border-radius: 22px; background: #fff; padding: 6px; box-shadow: var(--shadow-md); }
+.boot__logo { width: 88px; height: 88px; border-radius: 22px; background: var(--color-logo-bg); padding: 6px; box-shadow: var(--shadow-md); }
 
 /* Buttons — every button is at least a 44 px tap target */
 .btn {
@@ -43,7 +43,7 @@ a { color: var(--color-link); }
 .btn--danger { background: var(--color-danger); color: var(--color-on-dark); }
 .btn--danger:hover { box-shadow: var(--shadow-md); filter: brightness(0.92); }
 .btn:disabled { opacity: 0.6; cursor: default; transform: none; box-shadow: none; }
-.btn--sm { min-height: 36px; padding: 6px 14px; font-size: 0.82rem; border-radius: var(--radius-full); }
+.btn--sm { min-height: var(--tap); padding: 6px 14px; font-size: 0.82rem; border-radius: var(--radius-full); }
 .btn--block { width: 100%; }
 
 /* Light/dark toggle (pill, as in v1) */
@@ -73,7 +73,7 @@ a { color: var(--color-link); }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field__label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
 .field__hint { color: var(--color-muted); font-size: 0.82rem; }
-.field__error { color: var(--color-danger); font-size: 0.85rem; font-weight: 600; }
+.field__error { color: var(--color-danger-text); font-size: 0.85rem; font-weight: 600; }
 .field__error:empty { display: none; }
 .field__error:not(:empty)::before { content: "⚠ "; }
 .input {
@@ -82,12 +82,12 @@ a { color: var(--color-link); }
   min-height: 48px;
 }
 .input:focus-visible { outline: 3px solid color-mix(in srgb, var(--color-accent) 55%, transparent); outline-offset: 1px; border-color: var(--color-primary); }
-.input[aria-invalid="true"] { border-color: var(--color-danger); }
+.input[aria-invalid="true"] { border-color: var(--color-danger-text); }
 .input-prefix { display: flex; align-items: center; border: 1.5px solid var(--color-border); border-radius: var(--radius); background: var(--color-input); }
 .input-prefix > span { padding-left: 14px; color: var(--color-muted); font-weight: 700; }
 .input-prefix > .input { border: 0; padding-left: 2px; background: transparent; }
 .input-prefix:focus-within { border-color: var(--color-primary); outline: 3px solid color-mix(in srgb, var(--color-accent) 55%, transparent); outline-offset: 1px; }
-.input-prefix:has(.input[aria-invalid="true"]) { border-color: var(--color-danger); }
+.input-prefix:has(.input[aria-invalid="true"]) { border-color: var(--color-danger-text); }
 .input-prefix > .input:focus-visible { outline: none; }
 
 /* Avatar */
