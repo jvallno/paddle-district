@@ -1,6 +1,8 @@
-# Pickle Boat
+# Paddle District
 
-Pickleball open play with paddle stacking and community features.
+Pickleball open play built around a paddle queueing system (fairness rotation
+or paddle stacking), with player profiles and community features. This `next`
+branch is **v2**, a from-scratch rebuild; the original app (v1) lives on `main`.
 Vanilla JS, no build step.
 
 ```bash

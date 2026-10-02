@@ -1,0 +1,12 @@
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  height: var(--topbar-h);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--space-3);
+  background: var(--color-brand-dark); color: var(--color-on-dark);
+}
+.topbar[hidden] { display: none; }
+.topbar__brand { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--color-on-dark); text-decoration: none; }
+.topbar__me { display: inline-flex; border-radius: var(--radius-full); }
+.topbar__me:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.topbar .avatar { width: 34px; height: 34px; font-size: 0.8rem; box-shadow: 0 0 0 2px var(--color-accent); }

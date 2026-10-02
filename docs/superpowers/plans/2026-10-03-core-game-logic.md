@@ -1,5 +1,7 @@
 # Core Game Logic Implementation Plan (Spec 1 · Plan 1 of 3)
 
+> **Renamed 2026-10-03:** the product is now **Paddle District** (v2); "Pickle Boat" was the working title. Code snippets below predate the rename — the code in the repo is authoritative.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement every game rule in Spec 1 — handles, score reporting, session leaderboard, team balancing, the paddle-queue engine (fairness + stacking, three court rules), and results-log entries — as pure, node-tested `lib/` modules.

@@ -1,20 +1,16 @@
-// Placeholder landing view — shows the feature convention (init + html`` +
-// view:teardown). Replace once the app's first real screen is designed.
+// Home (#/home). Placeholder until Plan 3 brings My Sessions here.
 import { html } from '../../lib/html.js';
-import { showToast } from '../../lib/toast.js';
+import { getSession } from '../../lib/session.js';
 
 export function init(container) {
+  const { profile } = getSession();
   container.innerHTML = html`
-    <section class="home">
-      <p class="home__kicker">Pickle Boat</p>
-      <h1 class="home__title">Paddle stacking for open play</h1>
-      <p class="home__sub">Scaffold is running. Next step: brainstorm how the app works.</p>
-      <button type="button" class="btn btn--primary" id="ping">Check toast</button>
+    <section class="page home">
+      <h1 class="page__title">Hi, ${profile.displayName}</h1>
+      <div class="card home__soon">
+        <h2 class="home__soon-title">Sessions are coming next</h2>
+        <p class="page__sub">Soon you'll create open-play sessions, check in by QR, and queue for courts from here.</p>
+      </div>
+      <a class="btn btn--secondary home__card-link" href="#/me">Show my player card</a>
     </section>`;
-
-  const onPing = () => showToast('Everything is wired up.', 'success');
-  container.querySelector('#ping').addEventListener('click', onPing);
-  container.addEventListener('view:teardown', () => {
-    // Unsubscribe snapshots / timers here once the view has any.
-  }, { once: true });
 }

@@ -4,7 +4,7 @@
 
 ## 1. Purpose & product context
 
-Pickle Boat is a pickleball open-play app built around a **paddle queueing
+Paddle District v2 is a pickleball open-play app built around a **paddle queueing
 system** (with paddle stacking as one of its modes) plus Reclub-style community
 features. It combines three goals:
 
@@ -12,7 +12,7 @@ features. It combines three goals:
   scores, and standings.
 - **B — Many organizers:** any account can create and run its own, fully
   separate sessions.
-- **C — Players self-serve** from their phones using a verified Pickle Boat
+- **C — Players self-serve** from their phones using a verified Paddle District
   account (check in, queue, report scores) instead of one scorekeeper doing
   everything.
 
@@ -25,9 +25,11 @@ features. It combines three goals:
 | 3 | Live session & paddle queue | **This spec** |
 | 4 | Stats & community (in-house DUPR-style rating, cross-session rankings, feed/chat) | Later spec |
 
-> **Separate system.** Pickle Boat is an independent product: its own repo,
-> Firebase project, accounts, and data. It shares **no** code, database, users,
-> or sessions with `../paddle-district`, which is only one of its inspirations.
+> **Rebuild, separate data.** This is Paddle District **v2**, a from-scratch
+> rebuild (renamed from the working title "Pickle Boat" on 2026-10-03). It lives
+> in the fork `jvallno/paddle-district` on branch `next`; v1 stays on `main`. v2
+> shares **no** code, database, users, or sessions with v1 or with the original
+> owner's Firebase project — v1 is only one of its inspirations.
 
 Spec 1 must store data so #2 and #4 can be added without reworking it — in
 particular the append-only **results log** (§4.3) that #4's rating engine replays.
@@ -40,7 +42,7 @@ ordered by "longest since last played"; the organizer taps *Generate Match* per
 court; submitting a score sends all four to the back of the line. Swaps, score
 edits (reverse + reapply stats), leaderboard (Wins / Points / Win% / Pt%,
 tiebreak score diff), game history, end/continue session, public read-only
-`view.html` with QR. No player accounts, no cross-session identity. Pickle Boat
+`view.html` with QR. No player accounts, no cross-session identity. Paddle District
 borrows the idea of its fairness ordering as one mode and designs everything
 else independently; nothing is migrated or imported from it.
 
@@ -56,9 +58,10 @@ else independently; nothing is migrated or imported from it.
 | Getting in | **Scan session QR** at the venue (`#/join/{sid}`) **or organizer searches & adds** a verified profile. RSVP check-in comes with #2. |
 | Guests | Organizer can add a guest by name if the session allows guests. Guests play and appear on **that session's** courts/queue/leaderboard only — never in `results`, ratings, or cross-session stats; no profile. |
 | Rating | In-house **DUPR-style, margin-based** rating (2.000–8.000, reliability %), built in #4. Spec 1 only stores a **self-rating** and the results log. |
-| Backend | **Firebase** (Auth + Firestore + Hosting) in a **new Firebase project** dedicated to Pickle Boat. **Host-device** architecture (§5). |
-| Repo | **New GitHub repository** for Pickle Boat. |
-| Relationship to paddle-district | **Separate system** — no shared code, Firebase project, users, or data; paddle-district is inspiration only. |
+| Backend | **Firebase** (Auth + Firestore + Hosting) in a **new Firebase project** dedicated to Paddle District. **Host-device** architecture (§5). |
+| Repo | **New GitHub repository** for Paddle District. |
+| Relationship to v1 | **Rebuild with separate data** — no shared code, Firebase project, users, or data with v1 (original owner's project); v1 is inspiration only. |
+| Environments | **Two only:** **Local** (Firebase emulators, `demo-paddle-district`) and **Live** — the user's own Firebase project `paddle-district-v2` (Firestore in `asia-southeast1`), served at https://paddle-district-v2.web.app. |
 | Brand palette | Greens `#273635 #384d3e #4e5650 #577047 #5d814c` + one accent, pickleball yellow-green `~#c9d64a` (§7). |
 
 ## 3. Scope
@@ -82,8 +85,8 @@ guest history.
 
 | Path | Contents | Written by |
 |---|---|---|
-| `users/{uid}` | `displayName`, `handle`, `photoURL`, `selfRating` (2.0–8.0, step 0.5), `createdAt` | Owner only |
-| `handles/{handle}` | `{ uid }` — guarantees unique `@handle` (lower-case, `[a-z0-9_]{3,20}`) | Owner, same batch as profile; create-only |
+| `users/{uid}` | `displayName`, `handle`, `photoURL` (the Google account photo; no upload yet), `selfRating` (2.0–8.0, step 0.5), `createdAt` | Owner only |
+| `handles/{handle}` | `{ uid }` — guarantees unique `@handle` (lower-case, `[a-z0-9_]{3,20}`) | Owner, same batch as profile; create-only. Fixed after creation (never changed or freed). |
 
 ### 4.2 Sessions
 
@@ -237,8 +240,8 @@ Match by Auth **uid** only — never `email_verified`.
 
 | Data | Rule |
 |---|---|
-| `users/{uid}` | Read: signed in. Create/update: `uid == auth.uid`. |
-| `handles/{h}` | Create only if absent and `uid == auth.uid`; no update/delete. |
+| `users/{uid}` | Create/update: `uid == auth.uid`. "Signed in" means signed in with Google: rules check `request.auth.token.firebase.sign_in_provider == 'google.com'`. `displayName` must contain a non-space; `photoURL` must be empty or a `https://*.googleusercontent.com/` URL; `displayName` rejects invisible/direction-control characters. Read: single `get`, or a list capped at 25 per query (`limit <= 25`). |
+| `handles/{h}` | Create only if absent and `uid == auth.uid` (signed in with Google, `sign_in_provider == 'google.com'`); no update/delete. |
 | `sessions/{sid}` | **Public read.** Create: signed in with `ownerId == auth.uid` and `organizerIds == [auth.uid]`. Update: organizers; changes to `ownerId`/`organizerIds` owner-only. Delete: owner. |
 | `…/participants/{pid}` | Read: signed in. Player creates/updates **own** (`pid == auth.uid`, `isGuest == false`, status in here/break/left) while `status == live`. Organizers: any, incl. guests (only if `guestsAllowed`). |
 | `…/queueEntries/{eid}` | Read: signed in. Player creates entries containing themselves; partners may only append themselves to `accepted`; creator may cancel. Organizers: any. |
@@ -252,6 +255,7 @@ Match by Auth **uid** only — never `email_verified`.
 - Firestore **persistent local cache** on; writes queue offline and sync later;
   a sync dot shows saved / syncing / offline. Every write stamps `clientAt`.
 - No host → "Queue paused" banner (§5.6).
+- First-time profile setup needs a connection (its batch is awaited); a new player's unconfirmed local profile write doesn't count until the server confirms it, so a rejected handle never bounces the app off the setup screen. If the profile can't load (an error, or still loading after 10 s) the app shows a "Can't reach Paddle District" screen with Try again and Sign out.
 - Duplicates: deterministic solo entry ids; engine keeps the earliest entry if a
   player appears in more than one.
 - Player leaves mid-game → court continues; organizer swaps. Player leaves while
@@ -281,7 +285,7 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 - **`npm test`** — engine (both modes × three court rules; groups that don't
   fit; winners-stay cap; ties; leavers; 5-player edge cases), team balancing,
   score-flow transitions, session stats, handle validation, router.
-- **Rules emulator suite** in `tests-rules/` (own `package.json`): cross-session
+- **Rules emulator suite** in `rules-tests/` (own `package.json`): cross-session
   attacks, player writing `live/state`, confirming own team's score, editing
   `results`, co-organizer removing owner, player adding a guest, writes to an
   ended session — all **denied**; normal flows **allowed**.
@@ -291,9 +295,10 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 
 ## 12. Setup prerequisites
 
-- Create a **new GitHub repo** for Pickle Boat and add it as `origin`.
+- Create a **new GitHub repo** for Paddle District and add it as `origin`.
 - Create a **new Firebase project** (Auth: Google provider; Firestore; Hosting);
   add the Hosting domain to Auth **authorized domains**.
 - `lib/firebase-config.js` stays gitignored; commit only the example.
+- Local development uses the Firebase emulators with the `demo-paddle-district` project, so no cloud project is needed until go-live.
 
-Both are outward-facing and are done only with the user's explicit go-ahead.
+Creating the repo and the Firebase project are outward-facing and done only with the user's explicit go-ahead.
