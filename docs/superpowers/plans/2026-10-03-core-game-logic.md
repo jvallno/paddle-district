@@ -44,6 +44,7 @@ Inputs the spec implies but doesn't spell out, most likely to bite first. Each o
 - The engine signature is `step({ config, participants, entries, matches, now, makeId }) → { newMatches, entryUpdates, state }`. It derives court occupancy from `matches`, so it takes no previous `state` and no `rng` (balancing is deterministic). Results come from a separate pure `pendingResults()` in `lib/results.js`.
 - `live/state` shape: `{ mode, courts: [{ courtId, name, paused, matchId, team1, team2, startedAt, holding }], queue: [{ pids, eid?, ready? }], names, updatedAt }`. The host adds `hostDeviceId` and `version`.
 - TV route becomes `#/tv/{sid}` (the existing `parseHash` supports one param), not `#/s/{sid}/tv`.
+- Stacking fill is an include-first search for the earliest exact-fit combination of ready entries (review fix; the greedy first-fit in Task 5's original code could leave a court idle).
 
 ## File structure
 

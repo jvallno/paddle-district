@@ -14,6 +14,8 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | Topic | One-liner | Detail lives in |
 |---|---|---|
 | Stack | Vanilla JS ES modules, **no build step**; CDN imports; node `--test` for pure logic. | `AGENTS.md` → Stack & ground rules |
+| Queue engine | `step()` in `lib/queue-engine.js` — pure; derives courts from `matches`, fills free courts per mode (fairness/stacking) and court rule; host commits its output. | `lib/queue-engine.js` header, spec §5 |
+| Game rules (pure) | `handle`, `score-flow`, `session-stats`, `team-balance`, `results` in `lib/`, each with `tests/*.test.js`. | the module headers |
 | Layout | `index.html` → `lib/app.js` (hash router); `features/<name>/` UI; `lib/` services + pure logic; `styles/` tokens. | `AGENTS.md` → Architecture |
 | Rendering | `html` tagged template auto-escapes every `${}`; guard test blocks bare arrays → `innerHTML` and direct `escapeHtml` imports. | `lib/html.js`, `tests/html-usage.test.js` |
 | Run / test | `npm run serve` (localhost:5174); `npm test`. | `AGENTS.md` → Run / test |
@@ -36,7 +38,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 
 | Date | Plan | Summary |
 |---|---|---|
-| — | *(none yet)* | |
+| 2026-10-03 | [Core game logic](superpowers/plans/2026-10-03-core-game-logic.md) | Spec 1 · Plan 1/3 — pure `lib/` rules: handles, score flow, session stats, team balance, queue engine, results log. |
 
 ## Key decisions
 

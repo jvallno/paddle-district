@@ -50,7 +50,7 @@ docs/superpowers/   # specs/ (design) and plans/ (implementation) per feature
 
 ### `lib/` — two kinds of module
 
-- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`.
+- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`.
   **These have `tests/*.test.js` and must stay import-free of DOM/Firebase** so
   they run under `node --test`. Put all game/queue/ranking rules here and test
   them — that's where the bugs hide.
