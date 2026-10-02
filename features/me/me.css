@@ -1,0 +1,12 @@
+.me__card { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); text-align: center; }
+.me__head { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.me__who { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
+.me__name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; }
+.me__handle { color: var(--color-muted); font-family: var(--font-mono); }
+.me__qr { width: min(240px, 70vw); background: #fff; padding: var(--space-2); border-radius: var(--radius); border: 1px solid var(--color-border); }
+.me__qr svg { display: block; width: 100%; height: auto; }
+.me__qr-note { color: var(--color-muted); font-size: 0.85rem; }
+.me__form { display: flex; flex-direction: column; gap: var(--space-3); }
+.me__form-title { font-size: 1.1rem; }
+.me__form .btn--primary { align-self: flex-start; }
+.me__signout { align-self: center; }

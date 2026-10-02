@@ -1,0 +1,11 @@
+.signin {
+  min-height: 100vh;
+  max-width: var(--content-max); margin: 0 auto;
+  padding: clamp(48px, 12vh, 120px) var(--space-4) var(--space-5);
+  display: flex; flex-direction: column; justify-content: center; gap: var(--space-3);
+}
+.signin__brand { color: var(--color-primary); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8rem; }
+.signin__title { font-size: clamp(2rem, 7vw, 2.8rem); line-height: 1.08; }
+.signin__sub { color: var(--color-muted); font-size: 1.05rem; }
+.signin__google { align-self: flex-start; margin-top: var(--space-2); padding: 12px 20px; }
+.signin__note { color: var(--color-faint); font-size: 0.85rem; }
