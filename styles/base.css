@@ -101,3 +101,8 @@ a { color: var(--color-link); }
 .pill--gold { background: var(--color-highlight); border-color: transparent; color: var(--color-highlight-ink); font-weight: 700; }
 
 .stalled__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+/* Localhost-only data badge (lib/data-mode.js envBadge) */
+.env-badge { position: fixed; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 900; pointer-events: none; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; box-shadow: var(--shadow-md); }
+.env-badge--live { background: var(--color-danger); color: var(--color-on-dark); }
+.env-badge--sandbox { background: var(--color-accent); color: var(--color-accent-ink); }
