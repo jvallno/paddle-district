@@ -15,7 +15,13 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+class DevServer(ThreadingHTTPServer):
+    # The browser requests many ES modules at once; the default backlog of 5
+    # makes it drop connections (ERR_CONNECTION_RESET) and the app never boots.
+    request_queue_size = 128
+
+
 if __name__ == "__main__":
-    with ThreadingHTTPServer(("", PORT), NoCacheHandler) as httpd:
+    with DevServer(("", PORT), NoCacheHandler) as httpd:
         print(f"Serving paddle-district on http://localhost:{PORT} (no-cache)")
         httpd.serve_forever()
