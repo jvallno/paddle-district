@@ -1,41 +1,36 @@
-/* Design tokens — Paddle District brand (spec §7). Change values here, never
-   hard-code colors in feature CSS. */
+/* Design tokens — Paddle District brand, carried over from v1 (spec §7).
+   Change values here, never hard-code colors in feature CSS. The theme is
+   <html data-theme="light|dark">, set before first paint by index.html. */
 :root {
-  /* Brand greens */
-  --color-text: #273635;
-  --color-brand-dark: #384d3e;
-  --color-muted: #4e5650;
-  --color-primary: #577047;        /* buttons/links: white text 5.5:1 */
-  --color-primary-ink: #4a5f3c;    /* primary hover */
-  --color-primary-bright: #5d814c; /* live/active highlights, large text only */
-  --color-accent: #c9d64a;         /* pickleball yellow-green: Team 2, "you're up", alerts */
-  --color-accent-ink: #273635;     /* text on accent */
-  --color-on-dark: #ffffff;        /* text/icons on brand/dark surfaces */
+  /* Brand (same in both themes) */
+  --color-primary: #4A5C2F;        /* army: primary buttons, links (white 7.3:1) */
+  --color-primary-ink: #38471F;    /* hover/pressed */
+  --color-accent: #8FB339;         /* lime: positive actions — dark text only */
+  --color-accent-ink: #1C1F14;
+  --color-highlight: #D4A017;      /* gold: Team 2, "you're up", level pills */
+  --color-highlight-ink: #1C1F14;
+  --color-danger: #C0392B;
+  --color-success: #4A7C2F;
+  --color-warning: #B7791F;
+  --color-on-dark: #FFFFFF;        /* text/icons on brand/dark surfaces */
+  --color-qr-bg: #FFFFFF;          /* QR codes need a white quiet zone in both themes */
+  --color-logo-bg: #FFFFFF;        /* white badge behind the logo (it has a white background) */
+  --color-google-bg: #FFFFFF;
+  --color-google-ink: #1C1F14;
 
-  /* Neutrals */
-  --color-bg: #f3f5f1;
-  --color-surface: #ffffff;
-  --color-surface-2: #f8faf6;
-  --color-faint: #8a948d;
-  --color-border: #dfe4dc;
+  /* Avatars without a photo (lib/avatar.js avatarIndex → 0…5), white text ≥ 4.5:1 */
+  --avatar-0: #4A5C2F;
+  --avatar-1: #38471F;
+  --avatar-2: #5B6E37;
+  --avatar-3: #6B5410;
+  --avatar-4: #2F5A4A;
+  --avatar-5: #7A3B2E;
 
-  /* Status (messages only) */
-  --color-success: #2f7d4f;
-  --color-warning: #b7791f;
-  --color-danger: #c0392b;
-
-  /* Avatars without a photo (lib/avatar.js avatarIndex → 0…5) */
-  --avatar-0: #577047;
-  --avatar-1: #384d3e;
-  --avatar-2: #4f6f40;
-  --avatar-3: #4e5650;
-  --avatar-4: #55662e;
-  --avatar-5: #2f5a4a;
-
-  /* Type */
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Space Mono', ui-monospace, monospace;
+  /* Type: Montserrat only (the display/body/mono names stay for older CSS) */
+  --font: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-display: var(--font);
+  --font-body: var(--font);
+  --font-mono: var(--font);
 
   /* Spacing / shape */
   --space-1: 4px;
@@ -44,13 +39,55 @@
   --space-4: 24px;
   --space-5: 40px;
   --radius: 10px;
-  --radius-lg: 16px;
+  --radius-lg: 14px;
   --radius-full: 999px;
-  --shadow-sm: 0 1px 2px rgba(39, 54, 53, 0.08);
-  --shadow-md: 0 4px 12px rgba(39, 54, 53, 0.10);
-  --shadow-lg: 0 16px 40px rgba(39, 54, 53, 0.18);
+  --tap: 44px;                     /* minimum tap target */
 
   /* Layout */
-  --topbar-h: 56px;
+  --topbar-h: 60px;
   --content-max: 560px;
+}
+
+:root, [data-theme="light"] {
+  --color-focus: #4A5C2F;          /* focus rings on page/cards (AA on light) */
+  --color-bg: #F5F6F0;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F0F2EA;
+  --color-text: #1C1F14;
+  --color-text-2: #3A3F2A;
+  --color-muted: #636A4D;
+  --color-faint: #8A9470;
+  --color-border: #D8DDD0;
+  --color-link: #4A5C2F;
+  --color-tint: #EEF2E6;           /* present/playing rows, hovers */
+  --color-header: #4A5C2F;
+  --color-header-2: #38471F;
+  --color-input: #F5F6F0;
+  --color-danger-text: #C0392B;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 12px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.16);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --color-focus: #8FB339;
+  --color-bg: #1A1C14;
+  --color-surface: #252819;
+  --color-surface-2: #2E3220;
+  --color-text: #EEF0E8;
+  --color-text-2: #CDD1BE;
+  --color-muted: #9AA380;
+  --color-faint: #6B7254;
+  --color-border: #3A3F2A;
+  --color-link: #8FB339;
+  --color-tint: #2A3318;
+  --color-header: #2E3820;
+  --color-header-2: #243018;
+  --color-input: #1E2115;
+  --color-danger-text: #F08A7E;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
 }

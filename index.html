@@ -3,12 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#384d3e" />
+  <meta name="theme-color" content="#4A5C2F" />
   <title>Paddle District</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23384d3e'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23c9d64a'/%3E%3C/svg%3E" />
+  <script>
+    // Theme before first paint — same rule as lib/theme-choice.js initialTheme().
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem('pd:theme'); } catch (e) {}
+      var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved === 'light' || saved === 'dark' ? saved : (dark ? 'dark' : 'light');
+      document.documentElement.dataset.theme = theme;
+      if (theme === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#2E3820');
+    })();
+  </script>
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles/tokens.css" />
   <link rel="stylesheet" href="/styles/base.css" />
   <link rel="stylesheet" href="/styles/modal.css" />
@@ -21,7 +33,7 @@
   <link rel="stylesheet" href="/features/profile/profile.css" />
 </head>
 <body>
-  <div id="boot" class="boot">Loading…</div>
+  <div id="boot" class="boot"><img class="boot__logo" src="/assets/logo-512.png" alt="" width="88" height="88"><span>Loading…</span></div>
   <header id="topbar" class="topbar" hidden></header>
   <main id="view"></main>
   <script type="module" src="/lib/app.js"></script>

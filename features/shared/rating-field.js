@@ -24,6 +24,11 @@ export function wireRatingField(form) {
   });
 }
 
+// Moves keyboard/screen-reader focus to the first invalid field (on submit).
+export function focusFirstError(form) {
+  form.querySelector('[aria-invalid="true"]')?.focus();
+}
+
 // Shows each field's message (or clears it) from validateProfileInput().errors.
 export function showErrors(form, errors) {
   for (const el of form.querySelectorAll('[data-error]')) {

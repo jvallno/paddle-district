@@ -5,12 +5,13 @@ import { getSession, onSession } from '../../lib/session.js';
 import { avatarHtml } from '../../lib/avatar.js';
 import { levelFor, NAME_MAX, validateProfileInput } from '../../lib/profile-input.js';
 import { updateProfile } from '../../lib/profiles.js';
+import { appUrl } from '../../lib/app-url.js';
 import { signOut } from '../../lib/auth.js';
-import { ratingFieldHtml, wireRatingField, showErrors } from '../shared/rating-field.js';
+import { ratingFieldHtml, wireRatingField, showErrors, focusFirstError } from '../shared/rating-field.js';
 
 // Absolute link to a public profile — what the player-card QR encodes.
 export function profileUrl(handle) {
-  return `${window.location.origin}${window.location.pathname}#/u/${handle}`;
+  return appUrl(window.location, `#/u/${handle}`);
 }
 
 function cardHtml(p) {
@@ -19,7 +20,7 @@ function cardHtml(p) {
     <div class="me__who">
       <p class="me__name">${p.displayName}</p>
       <p class="me__handle">@${p.handle}</p>
-      <span class="pill pill--accent">${p.selfRating.toFixed(1)} · ${levelFor(p.selfRating)?.label ?? ''}</span>
+      <span class="pill pill--gold">${p.selfRating.toFixed(1)} · ${levelFor(p.selfRating)?.label ?? ''}</span>
     </div>`;
 }
 
@@ -40,7 +41,7 @@ export function init(container) {
       <div class="card me__card">
         <div class="me__head" data-card>${cardHtml(p)}</div>
         <div class="me__qr" data-qr></div>
-        <p class="me__qr-note">Organizers scan this with their phone camera to find you.</p>
+        <p class="me__qr-note">Show this to an organizer — they scan it with their phone camera to add you.</p>
       </div>
       <form class="card me__form" novalidate>
         <h2 class="me__form-title">Edit profile</h2>
@@ -65,7 +66,7 @@ export function init(container) {
     const data = Object.fromEntries(new FormData(form));
     const { ok, value, errors } = validateProfileInput(data);
     showErrors(form, errors);
-    if (!ok) return;
+    if (!ok) { focusFirstError(form); return; }
     // Applies locally at once and syncs when online (offline-tolerant).
     updateProfile(p.uid, value).catch((err) => showToast(`Could not save: ${err.message}`, 'error'));
     showToast('Profile saved.', 'success');

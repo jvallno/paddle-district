@@ -10,8 +10,8 @@
 .toast {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius);
-  color: #fff;
-  background: var(--color-muted);
+  color: var(--color-on-dark);
+  background: var(--color-primary-ink);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 .toast--success { background: var(--color-success); }
