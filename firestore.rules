@@ -1,0 +1,53 @@
+rules_version = '2';
+
+// Pickle Boat security rules — the real security boundary (UI checks are
+// cosmetic). Every change here needs rules-tests/ updated: attacks denied,
+// normal flows allowed. Users are matched by Auth uid only, never email.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Public profile (spec §4.1). Badge fields are deliberately not allowed:
+    // they arrive with the "Pro" stage and are never self-written.
+    function validProfile(d) {
+      return d.keys().hasOnly(['displayName', 'handle', 'photoURL', 'selfRating', 'createdAt'])
+        && d.keys().hasAll(['displayName', 'handle', 'photoURL', 'selfRating', 'createdAt'])
+        && d.displayName is string && d.displayName.size() >= 1 && d.displayName.size() <= 40
+        && d.handle is string && d.handle.matches('^[a-z0-9_]{3,20}$')
+        && d.photoURL is string && d.photoURL.size() <= 1000
+        && (d.selfRating is int || d.selfRating is float)
+        && d.selfRating >= 2 && d.selfRating <= 8
+        && d.selfRating * 2 == math.floor(d.selfRating * 2);
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn();
+      // Created once, in the same batch that claims handles/{handle}.
+      allow create: if isSelf(uid)
+        && validProfile(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/handles/$(request.resource.data.handle)).data.uid == uid;
+      // Handle and createdAt are fixed after creation.
+      allow update: if isSelf(uid)
+        && validProfile(request.resource.data)
+        && request.resource.data.handle == resource.data.handle
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+    }
+
+    // handles/{handle} → { uid }: makes @handles unique. Claimable only while
+    // creating your profile (so one handle per account); never moved or freed.
+    match /handles/{handle} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid
+        && handle.matches('^[a-z0-9_]{3,20}$')
+        && !exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.handle == handle;
+      allow update, delete: if false;
+    }
+  }
+}

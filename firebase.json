@@ -1,0 +1,35 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      ".git/**",
+      ".claude/**",
+      ".superpowers/**",
+      ".playwright-mcp/**",
+      "docs/**",
+      "tests/**",
+      "rules-tests/**",
+      "serve.py",
+      "package.json",
+      "AGENTS.md",
+      "CLAUDE.md",
+      "README.md",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "lib/firebase-config.example.js"
+    ]
+  },
+  "emulators": {
+    "auth": { "port": 9099 },
+    "firestore": { "port": 8080 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

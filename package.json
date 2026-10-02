@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
+    "test:rules": "npm --prefix rules-tests test",
+    "emulators": "npm --prefix rules-tests run emulators",
     "serve": "python3 serve.py 5174"
   }
 }
