@@ -24,3 +24,7 @@ test('ready: auth screens bounce to home (or the remembered route)', () => {
   assert.deepEqual(resolveRoute('ready', 'me'), { show: 'me' });
   assert.deepEqual(resolveRoute('ready', 'u'), { show: 'u' });
 });
+
+test('unknown status: render nothing rather than fail open', () => {
+  assert.deepEqual(resolveRoute('weird', 'home'), { wait: true });
+});

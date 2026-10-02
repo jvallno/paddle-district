@@ -8,6 +8,7 @@ test('initials uses first and last word', () => {
   assert.equal(initials('élan vital'), 'ÉV');
   assert.equal(initials(''), '?');
   assert.equal(initials(null), '?');
+  assert.equal(initials('😀 Ana'), '😀A');
 });
 
 test('avatarIndex is stable and in range', () => {

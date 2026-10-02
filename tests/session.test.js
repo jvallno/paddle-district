@@ -24,3 +24,9 @@ test('statusForProfile: unconfirmed new profile is ignored until the server acce
   assert.equal(statusForProfile('ready', null, false), 'needsProfile');
   assert.equal(statusForProfile('loading', p, false), 'ready');
 });
+
+test('statusForProfile: no profile from cache alone proves nothing (offline returning player)', () => {
+  assert.equal(statusForProfile('loading', null, false, true), null, 'wait for server');
+  assert.equal(statusForProfile('ready', null, false, true), null, 'wait for server');
+  assert.equal(statusForProfile('loading', null, false, false), 'needsProfile', 'server says no profile');
+});

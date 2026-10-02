@@ -30,7 +30,8 @@ beforeEach(async () => {
   });
 });
 
-const as = (uid) => env.authenticatedContext(uid).firestore();
+const as = (uid) => env.authenticatedContext(uid, { firebase: { sign_in_provider: 'google.com' } }).firestore();
+const asPassword = (uid) => env.authenticatedContext(uid, { firebase: { sign_in_provider: 'password' } }).firestore();
 const anon = () => env.unauthenticatedContext().firestore();
 const profile = (over = {}) => ({ displayName: 'Ben', handle: 'ben', photoURL: '', selfRating: 3, createdAt: serverTimestamp(), ...over });
 
@@ -82,8 +83,9 @@ test('attack: self-award a badge', async () => {
 test('attack: invalid fields on setup', async () => {
   for (const bad of [
     { selfRating: 9 }, { selfRating: 1.5 }, { selfRating: 3.3 }, { selfRating: '3' },
-    { displayName: '' }, { displayName: 'x'.repeat(41) }, { handle: 'Ben', displayName: 'Ben' },
+    { displayName: '' }, { displayName: '   ' }, { displayName: 'x'.repeat(41) }, { handle: 'Ben', displayName: 'Ben' },
     { createdAt: new Date(0) },
+    { photoURL: 'http://x/p.png' }, { photoURL: 'javascript:alert(1)' }, { photoURL: 'https://' + 'x'.repeat(1000) },
   ]) {
     const data = profile(bad);
     await assertFails(setup(as('ben'), 'ben', data, data.handle), JSON.stringify(bad));
@@ -105,6 +107,35 @@ test('attack: repoint a handle', async () => {
 test('attack: anything outside users/handles', async () => {
   await assertFails(setDoc(doc(as('ana'), 'sessions/s1'), { ownerId: 'ana' }));
   await assertFails(getDoc(doc(as('ana'), 'results/r1')));
+});
+test('attack: non-Google account reads or sets up a profile', async () => {
+  await assertFails(getDoc(doc(asPassword('ben'), 'users/ana')));
+  await assertFails(setup(asPassword('ben'), 'ben'));
+});
+test('attack: claim two handles in the setup batch', async () => {
+  const db = as('ben');
+  const b = writeBatch(db);
+  b.set(doc(db, 'handles/ben'), { uid: 'ben' });
+  b.set(doc(db, 'handles/ben2'), { uid: 'ben' });
+  b.set(doc(db, 'users/ben'), profile());
+  await assertFails(b.commit());
+});
+test('attack: add an extra field on update', async () => {
+  await assertFails(updateDoc(doc(as('ana'), 'users/ana'), { uid: 'ana' }));
+});
+test('attack: handle doc with an extra key', async () => {
+  const db = as('ben');
+  const b = writeBatch(db);
+  b.set(doc(db, 'handles/ben'), { uid: 'ben', x: 1 });
+  b.set(doc(db, 'users/ben'), profile());
+  await assertFails(b.commit());
+});
+test('attack: handle doc id that is not a valid handle', async () => {
+  const db = as('ben');
+  const b = writeBatch(db);
+  b.set(doc(db, 'handles/AB'), { uid: 'ben' });
+  b.set(doc(db, 'users/ben'), profile({ handle: 'ab' }));
+  await assertFails(b.commit());
 });
 
 // ── Normal use: must all be ALLOWED ─────────────────────────────────────────

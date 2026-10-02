@@ -9,6 +9,7 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**",
+      "**/*.log",
       ".git/**",
       ".claude/**",
       ".superpowers/**",
