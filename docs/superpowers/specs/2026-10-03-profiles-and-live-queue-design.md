@@ -91,15 +91,15 @@ guest history.
 |---|---|---|
 | `sessions/{sid}` | `name`, `date`, `venue`, `ownerId`, `organizerIds[]` (includes owner), `courts[] {id,name,paused}`, `mode` (`fairness`\|`stacking`), `courtRule {type: everyoneOff\|winnersStay\|winnersSplit, maxWins}` (default `maxWins` 2), `guestsAllowed`, `status` (`live`\|`ended`), `host {deviceId, uid, beatAt, version}`, `createdAt` | Organizers; only owner changes `ownerId`/`organizerIds` |
 | `sessions/{sid}/participants/{pid}` | `uid` (null for guests), `isGuest`, `displayName`, `selfRating`, `status` (`here`\|`break`\|`left`), `checkedInAt`, `clientAt`. `pid` = uid for real players, `g_<random>` for guests | Player (own record) or organizers |
-| `sessions/{sid}/queueEntries/{eid}` | `players[]` (1, 2, or 4 pids), `createdBy`, `accepted[]`, `status` (`pending`\|`waiting`\|`assigned`\|`cancelled`), `createdAt` (server ts), `clientAt`. Solo entry id = `{pid}_{n}` (deterministic per stack so double-taps don't duplicate) | Players (entries containing themselves; partners add only their own acceptance) or organizers; host sets `assigned` |
-| `sessions/{sid}/live/state` | Host-computed view everyone watches: `courts[] {courtId, matchId, team1[], team2[], startedAt, winStreak}`, `queue[]` (ordered, with display names denormalized), `nextUp`, `hostDeviceId`, `version`, `updatedAt` | Host (organizer device) only |
-| `sessions/{sid}/matches/{mid}` | `courtId`, `team1[]`, `team2[]`, `names {pid: displayName}` (snapshot so the public TV view never needs to read `participants`), `startedAt`, `endedAt`, `score {t1, t2}`, `submittedBy`, `confirmedBy`, `status` (`playing`→`submitted`→`confirmed`\|`disputed`\|`overridden`), `overriddenBy`, `clientAt` | Host creates; match players submit/confirm/dispute; organizers override |
+| `sessions/{sid}/queueEntries/{eid}` | `players[]` (1, 2, or 4 pids), `createdBy`, `accepted[]`, `status` (`open`\|`assigned`\|`cancelled`); an entry is *ready* when every listed player is in `accepted[]`, `createdAt` (server ts), `clientAt`. Solo entry id = `{pid}_{n}` (deterministic per stack so double-taps don't duplicate) | Players (entries containing themselves; partners add only their own acceptance) or organizers; host sets `assigned` |
+| `sessions/{sid}/live/state` | Host-computed view everyone watches: `mode`, `courts[] {courtId, name, paused, matchId, team1[], team2[], startedAt, holding[]}`, `queue[] {pids[], eid?, ready?}`, `names {pid: displayName}`, `updatedAt`, plus host-added `hostDeviceId`, `version` | Host (organizer device) only |
+| `sessions/{sid}/matches/{mid}` | `courtId`, `team1[]`, `team2[]`, `names {pid: displayName}` (snapshot so the public TV view never needs to read `participants`), `startedAt`, `endedAt`, `score {t1, t2}`, `submittedBy`, `respondedBy` (who confirmed or disputed), `streaks {pid: winsInARow}`, `loggedSig`, `loggedRid`, `status` (`playing`→`submitted`→`confirmed`\|`disputed`\|`overridden`), `overriddenBy`, `clientAt` | Host creates; match players submit/confirm/dispute; organizers override |
 
 ### 4.3 Results log
 
 | Path | Contents | Written by |
 |---|---|---|
-| `results/{rid}` | `sessionId`, `matchId`, `team1[]`/`team2[]` of `{uid \| null, isGuest}`, `score {t1,t2}`, `playedAt`, `kind` (`result`\|`correction`), `corrects` (rid, for corrections) | Host, when a match becomes `confirmed` or `overridden`. **Append-only**: never updated/deleted; a later override writes a `correction` entry pointing at the original |
+| `results/{rid}` | `sessionId`, `matchId`, `team1[]`/`team2[]` of `{uid \| null, isGuest}`, `score {t1,t2}`, `playedAt`, `kind` (`result`\|`correction`), `corrects` (rid, for corrections) | Host, when a match becomes `confirmed` or `overridden`. **Append-only**: never updated/deleted; a later override writes a `correction` entry pointing at the previous entry for that match (a chain) |
 
 ### 4.4 Shape rationale
 
@@ -118,8 +118,8 @@ guest history.
 ### 5.1 Pure engine
 
 `lib/queue-engine.js` exports
-`step(config, state, participants, entries, matches, now, rng) → { state, newMatches, results }`.
-No DOM/Firebase; deterministic given `rng`. The host calls it on every relevant
+`step({ config, participants, entries, matches, now, makeId }) → { newMatches, entryUpdates, state }` — court occupancy is derived from `matches`, so no previous state or rng is needed; results-log entries come from `pendingResults()` in `lib/results.js`. `makeId` receives context — `{kind:'match', courtId, prevMid}` / `{kind:'result', mid, sig}` — so the host can use deterministic ids.
+No DOM/Firebase; deterministic. The host calls it on every relevant
 snapshot change and on a 1 s tick for timers.
 
 ### 5.2 Fairness mode
@@ -134,13 +134,14 @@ snapshot change and on a 1 s tick for timers.
 
 ### 5.3 Stacking mode
 
-- Players explicitly **stack** — solo, or a group of 2 or 4 (group entry
-  becomes `waiting` once every listed partner has accepted).
+- Players explicitly **stack** — solo, or a group of 2 or 4 (a group entry
+  is ready once every listed partner has accepted).
 - Order is first-come by server `createdAt` (fallback `clientAt` while pending).
-- Filling a free court from the front: a group of 4 takes the whole court; a
-  pair is matched with the next pair or next two solos; solos pair up in arrival
-  order. An entry that doesn't fit the open slots **keeps its place**; the court
-  takes the next entries that fit. Groups keep their chosen teams.
+- Filling a free court from the front: a free court is filled by the
+  **earliest combination of ready entries, in line order, whose sizes add up
+  exactly to the open slots** (a group of 4 takes a whole court; pairs stay
+  together; solos pair up in arrival order). Entries that aren't ready, or that
+  can't be part of an exact fit, keep their place. Groups keep their chosen teams.
 - After a game players are **not** auto-re-stacked; their phone shows a
   one-tap **Stack again**.
 
@@ -154,6 +155,7 @@ snapshot change and on a 1 s tick for timers.
   next two incoming players. Same max-N and tie handling.
 - In stacking mode, challengers are the next pair entry or next two solos; a
   group of 4 cannot challenge and keeps its place for the next empty court.
+- Stacking only: if winners are holding a court but no ready challengers fit, and a ready group of exactly 4 exists, the holders are released (everyone off) and that group takes the court — prevents a deadlock.
 
 ### 5.5 Court lifecycle
 
@@ -188,7 +190,7 @@ are resolved afterwards and never block the queue. Paused courts are skipped.
 | `#/new` | Create session (name, date, venue, courts, mode, court rule, guests) | Signed in |
 | `#/join/{sid}` | Session QR target: sign in → setup if needed → auto check-in | Anyone |
 | `#/s/{sid}` | Session (role-aware, below) | Participants & organizers |
-| `#/s/{sid}/tv` | Public live view: courts, timers, queue, leaderboard, big join QR, dark theme | Public, no sign-in |
+| `#/tv/{sid}` | Public live view: courts, timers, queue, leaderboard, big join QR, dark theme | Public, no sign-in |
 
 **Player view:** status card (*Waiting, 3rd in line* / *Up next on Court 2* /
 *Playing on Court 1* / *On break*); mode actions (**Stack me** solo or with
@@ -265,7 +267,7 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 
 - **Pure, node-tested (`lib/`):** `queue-engine.js`, `team-balance.js`,
   `score-flow.js` (state transitions + validation), `session-stats.js`,
-  `handle.js` (handle validation/normalization).
+  `handle.js` (handle validation/normalization), `results.js`.
 - **Services (`lib/`):** `firebase.js` (init, emulator switch on localhost),
   `auth.js`, `profiles.js`, `sessions.js` (watchers + intent writes),
   `host.js` (lease, heartbeat, runs `step`, writes batches).

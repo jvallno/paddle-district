@@ -44,6 +44,13 @@ Inputs the spec implies but doesn't spell out, most likely to bite first. Each o
 - The engine signature is `step({ config, participants, entries, matches, now, makeId }) → { newMatches, entryUpdates, state }`. It derives court occupancy from `matches`, so it takes no previous `state` and no `rng` (balancing is deterministic). Results come from a separate pure `pendingResults()` in `lib/results.js`.
 - `live/state` shape: `{ mode, courts: [{ courtId, name, paused, matchId, team1, team2, startedAt, holding }], queue: [{ pids, eid?, ready? }], names, updatedAt }`. The host adds `hostDeviceId` and `version`.
 - TV route becomes `#/tv/{sid}` (the existing `parseHash` supports one param), not `#/s/{sid}/tv`.
+- Stacking fill is an include-first search for the earliest exact-fit combination of ready entries (review fix; the greedy first-fit in Task 5's original code could leave a court idle).
+- Final review: a court's winners stay only if not currently playing and that court's last match is their own latest match (no stale stayers / double-booking); equal `startedAt` ties break on `mid`.
+- Final review: stacking entries are cancelled only for an explicit `left` player, size not 1/2/4, or a repeated pid; an unknown player keeps the entry's place (not ready).
+- Final review: the duplicate-player check counts only players who have accepted, so an unanswered invite can't lock the invitee out of their own stack.
+- Final review: stacking releases held winners (everyone off) when only a ready group of exactly 4 fits, avoiding a deadlock.
+- Final review: `makeId` receives context (`{kind:'match', courtId, prevMid}` / `{kind:'result', mid, sig}`) for deterministic ids.
+- Final review: results log — a missing pid not starting with `g_` is logged as a real player `{uid: pid, isGuest:false}`; corrections point at the previous entry (a chain).
 
 ## File structure
 
@@ -1450,3 +1457,11 @@ git add docs/superpowers/specs/2026-10-03-profiles-and-live-queue-design.md docs
 git commit -m "docs: record core-logic spec deltas; index plan 1"
 ```
 
+
+## Carried forward to Plan 3 (from reviews)
+
+- Host should derive deterministic ids from `makeId` context (`${courtId}_${prevMid}` for matches, `${mid}_${sig}` for results) so a takeover or overlapping hosts can't create duplicate matches or results.
+- UI: show "waiting for a partner" when a solo can't fit behind pairs; warn "already in line" before inviting a player who has an earlier entry (that invite would be cancelled).
+- A player swapped after a match was logged produces no correction (`loggedSig` covers score only) — revisit if swaps after scoring become common.
+- Clients must always write `accepted` (creator included) on queue entries; an entry without it is never ready.
+- Stacking search cost grows with queue length (fine for open-play sizes; revisit past ~100 entries).
