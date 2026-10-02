@@ -1734,3 +1734,13 @@ git commit -m "docs: run/test with emulators, index plan 2, spec deltas"
 - [ ] **Step 4:** Run `npm run test:rules` (green), then deploy the rules **from the CLI**: `npx --prefix rules-tests firebase deploy --only firestore:rules --project <project-id>`. Verify by reading the rules back (Firebase console or MCP `firebase_get_security_rules`) and diffing them against `firestore.rules`. Hosting predeploy refuses to deploy without lib/firebase-config.js.
 - [ ] **Step 5 (only if the user also asks to deploy hosting):** `npx --prefix rules-tests firebase deploy --only hosting --project <project-id>`. Add the hosting domain to **Auth → Settings → Authorized domains**. Fetch a served file (e.g. `/lib/app.js`) and diff it against the local copy. Fetch `/.git/HEAD`, `/docs/INDEX.md` and `/firestore.rules`: each must 404. Hosting predeploy refuses to deploy without lib/firebase-config.js.
 
+
+## Carried forward to Plan 3 (from reviews)
+
+- Public routes (`tv`, and the TV's join QR target) re-render on every auth-status change because `restartRouter` runs on each change. Skip the restart when the current route is public, or keep those views cheap to re-init.
+- Any view replaced outside the router must get `view:teardown` first (as `showStalled` now does). The host and TV views hold snapshots and timers.
+- `users` listing is capped at 25 per query, so organizer profile search must always set `limit(≤25)`. Case-insensitive name search would need a `nameLower` field (a rules and schema change), so decide it up front.
+- `#boot` is a 100vh block above `#view`, so the TV view sits below the fold until auth resolves. Hide or shrink it for public routes.
+- Open a11y items for the design phase: hints inside `<label>` pollute the accessible name; no focus or `document.title` management on route change.
+- After the first deploy, check `curl -I /` and confirm the no-cache header applies to the root `index.html`.
+- Small UX leftovers: "Profile saved." shows before the server confirms (offline convention); the setup "Waiting for a connection…" hint can linger after a late rejection; opening the dev server by LAN IP takes the production config path (document it in AGENTS).
