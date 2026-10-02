@@ -1,13 +1,15 @@
 # AGENTS.md — Orientation for AI agents & contributors
 
-Pickle Boat: a web app for pickleball open play built around **paddle
-stacking** (players queue for courts by stacking paddles) with Reclub-style
-community features. The product design is still being brainstormed — see the
-specs in `docs/superpowers/specs/` as they land.
+Pickle Boat: a web app for pickleball open play built around a **paddle
+queueing system** (fairness rotation or paddle stacking, chosen per session)
+with Reclub-style community features. Design lives in
+`docs/superpowers/specs/` — start with Spec 1 (profiles & live queue).
 
-Inspiration for the court/queue mechanics: the sibling project
+Inspiration (only) for the court/queue mechanics: the sibling project
 `../paddle-district` (multi-page static app: `app.html` open-play session,
 `view.html` public live view with QR, `dashboard.html` sessions, Firebase).
+**Pickle Boat is a separate system** — it shares no code, Firebase project,
+users, or data with paddle-district.
 
 > **📍 Check [docs/INDEX.md](docs/INDEX.md) first.** It's the one-page map of every
 > spec, plan, feature, and key decision — scan it before searching docs or code,

@@ -8,7 +8,8 @@ Pickle Boat is a pickleball open-play app built around a **paddle queueing
 system** (with paddle stacking as one of its modes) plus Reclub-style community
 features. It combines three goals:
 
-- **A — Run our own open play** better than `../paddle-district` does today.
+- **A — Run open play** for our own group: organizer tools for courts, queue,
+  scores, and standings.
 - **B — Many organizers:** any account can create and run its own, fully
   separate sessions.
 - **C — Players self-serve** from their phones using a verified Pickle Boat
@@ -24,10 +25,14 @@ features. It combines three goals:
 | 3 | Live session & paddle queue | **This spec** |
 | 4 | Stats & community (in-house DUPR-style rating, cross-session rankings, feed/chat) | Later spec |
 
+> **Separate system.** Pickle Boat is an independent product: its own repo,
+> Firebase project, accounts, and data. It shares **no** code, database, users,
+> or sessions with `../paddle-district`, which is only one of its inspirations.
+
 Spec 1 must store data so #2 and #4 can be added without reworking it — in
 particular the append-only **results log** (§4.3) that #4's rating engine replays.
 
-### What paddle-district does (baseline)
+### Inspiration: what paddle-district does
 
 Single-scorekeeper app on Firebase Realtime Database (one blob per session).
 The organizer marks attendance; the app keeps up to 3 pre-built 2v2 matches
@@ -36,7 +41,8 @@ court; submitting a score sends all four to the back of the line. Swaps, score
 edits (reverse + reapply stats), leaderboard (Wins / Points / Win% / Pt%,
 tiebreak score diff), game history, end/continue session, public read-only
 `view.html` with QR. No player accounts, no cross-session identity. Pickle Boat
-keeps its fairness behaviour as one mode and adds everything else below.
+borrows the idea of its fairness ordering as one mode and designs everything
+else independently; nothing is migrated or imported from it.
 
 ## 2. Decisions (agreed in brainstorm)
 
@@ -52,6 +58,7 @@ keeps its fairness behaviour as one mode and adds everything else below.
 | Rating | In-house **DUPR-style, margin-based** rating (2.000–8.000, reliability %), built in #4. Spec 1 only stores a **self-rating** and the results log. |
 | Backend | **Firebase** (Auth + Firestore + Hosting) in a **new Firebase project** dedicated to Pickle Boat. **Host-device** architecture (§5). |
 | Repo | **New GitHub repository** for Pickle Boat. |
+| Relationship to paddle-district | **Separate system** — no shared code, Firebase project, users, or data; paddle-district is inspiration only. |
 | Brand palette | Greens `#273635 #384d3e #4e5650 #577047 #5d814c` + one accent, pickleball yellow-green `~#c9d64a` (§7). |
 
 ## 3. Scope

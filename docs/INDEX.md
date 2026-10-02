@@ -18,7 +18,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | Rendering | `html` tagged template auto-escapes every `${}`; guard test blocks bare arrays → `innerHTML` and direct `escapeHtml` imports. | `lib/html.js`, `tests/html-usage.test.js` |
 | Run / test | `npm run serve` (localhost:5174); `npm test`. | `AGENTS.md` → Run / test |
 | Carried-over lessons | Deploy via CLI, rules emulator tests, uid-not-email rules, hosting ignore list, offline-tolerant writes. | `AGENTS.md` → Lessons |
-| Inspiration | `../paddle-district` — open-play session, courts, queue, live view + QR, rankings (Firebase, static pages). | sibling repo |
+| Inspiration | `../paddle-district` — open-play session, courts, queue, live view + QR, rankings (Firebase, static pages). | sibling repo — **inspiration only; separate system, nothing shared** |
 
 ## Features (`features/<name>/`)
 
