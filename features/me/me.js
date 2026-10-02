@@ -5,12 +5,13 @@ import { getSession, onSession } from '../../lib/session.js';
 import { avatarHtml } from '../../lib/avatar.js';
 import { levelFor, NAME_MAX, validateProfileInput } from '../../lib/profile-input.js';
 import { updateProfile } from '../../lib/profiles.js';
+import { appUrl } from '../../lib/app-url.js';
 import { signOut } from '../../lib/auth.js';
 import { ratingFieldHtml, wireRatingField, showErrors, focusFirstError } from '../shared/rating-field.js';
 
 // Absolute link to a public profile — what the player-card QR encodes.
 export function profileUrl(handle) {
-  return `${window.location.origin}${window.location.pathname}#/u/${handle}`;
+  return appUrl(window.location, `#/u/${handle}`);
 }
 
 function cardHtml(p) {

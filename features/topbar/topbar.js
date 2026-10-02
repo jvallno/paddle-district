@@ -8,7 +8,7 @@ export function renderTopbar(el, { status, profile }) {
   if (status !== 'ready') { el.innerHTML = ''; return; }
   el.innerHTML = html`
     <a class="topbar__brand" href="#/home">
-      <span class="topbar__logo"><img src="/assets/logo-512.png" alt="" width="36" height="36"></span>
+      <span class="topbar__logo"><img src="/assets/logo-96.png" alt="" width="36" height="36"></span>
       <span class="topbar__name">Paddle District</span>
     </a>
     ${themeToggleHtml('theme-toggle--on-dark')}

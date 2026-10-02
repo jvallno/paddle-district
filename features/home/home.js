@@ -8,7 +8,7 @@ export function init(container) {
     <section class="page home">
       <div class="home__hello">
         <p class="eyebrow">Welcome back</p>
-        <h1 class="page__title">Hi, ${profile.displayName} 👋</h1>
+        <h1 class="page__title">Hi, ${profile.displayName} <span aria-hidden="true">👋</span></h1>
       </div>
       <div class="card home__soon">
         <span class="home__soon-icon" aria-hidden="true">🏓</span>
