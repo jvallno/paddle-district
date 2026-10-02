@@ -44,6 +44,7 @@ Inputs the spec implies but doesn't spell out, most likely to bite first. Each i
 - Rules enforce Google as the sign-in provider (`sign_in_provider == 'google.com'`), not just the UI (review fix).
 - Profiles: `displayName` must contain a non-space; `photoURL` must be empty or https (rules), and avatars only render https photos (review fix).
 - A cache-only "no profile" snapshot doesn't count (`statusForProfile(…, fromCache)`), so an offline returning player isn't sent to setup; a stalled load shows a recovery screen (review fix).
+- Final review: production boot fallback + predeploy config check + no-cache headers; users listing capped at 25; Google-hosted photos only; invisible/bidi characters rejected in names.
 
 ## File structure
 
@@ -1730,6 +1731,6 @@ git commit -m "docs: run/test with emulators, index plan 2, spec deltas"
 - [ ] **Step 1:** Ask the user for the project ID (suggest `pickle-boat-<suffix>`) and region for Firestore (suggest `asia-southeast1`, which is near the paddle-district users). Then create the project (Firebase console, or the Firebase MCP `firebase_create_project`), register a **Web app**, and copy its config into `lib/firebase-config.js` using the shape in `lib/firebase-config.example.js`.
 - [ ] **Step 2:** In the console: enable **Authentication → Google** and create the **Firestore** database (production mode) in the chosen region.
 - [ ] **Step 3:** Write `.firebaserc`: `{ "projects": { "default": "<project-id>" } }`. Commit it.
-- [ ] **Step 4:** Run `npm run test:rules` (green), then deploy the rules **from the CLI**: `npx --prefix rules-tests firebase deploy --only firestore:rules --project <project-id>`. Verify by reading the rules back (Firebase console or MCP `firebase_get_security_rules`) and diffing them against `firestore.rules`.
-- [ ] **Step 5 (only if the user also asks to deploy hosting):** `npx --prefix rules-tests firebase deploy --only hosting --project <project-id>`. Add the hosting domain to **Auth → Settings → Authorized domains**. Fetch a served file (e.g. `/lib/app.js`) and diff it against the local copy. Fetch `/.git/HEAD`, `/docs/INDEX.md` and `/firestore.rules`: each must 404.
+- [ ] **Step 4:** Run `npm run test:rules` (green), then deploy the rules **from the CLI**: `npx --prefix rules-tests firebase deploy --only firestore:rules --project <project-id>`. Verify by reading the rules back (Firebase console or MCP `firebase_get_security_rules`) and diffing them against `firestore.rules`. Hosting predeploy refuses to deploy without lib/firebase-config.js.
+- [ ] **Step 5 (only if the user also asks to deploy hosting):** `npx --prefix rules-tests firebase deploy --only hosting --project <project-id>`. Add the hosting domain to **Auth → Settings → Authorized domains**. Fetch a served file (e.g. `/lib/app.js`) and diff it against the local copy. Fetch `/.git/HEAD`, `/docs/INDEX.md` and `/firestore.rules`: each must 404. Hosting predeploy refuses to deploy without lib/firebase-config.js.
 

@@ -237,7 +237,7 @@ Match by Auth **uid** only — never `email_verified`.
 
 | Data | Rule |
 |---|---|
-| `users/{uid}` | Read: signed in. Create/update: `uid == auth.uid`. "Signed in" means signed in with Google: rules check `request.auth.token.firebase.sign_in_provider == 'google.com'`. `displayName` must contain a non-space; `photoURL` must be empty or `https://`. |
+| `users/{uid}` | Create/update: `uid == auth.uid`. "Signed in" means signed in with Google: rules check `request.auth.token.firebase.sign_in_provider == 'google.com'`. `displayName` must contain a non-space; `photoURL` must be empty or a `https://*.googleusercontent.com/` URL; `displayName` rejects invisible/direction-control characters. Read: single `get`, or a list capped at 25 per query (`limit <= 25`). |
 | `handles/{h}` | Create only if absent and `uid == auth.uid` (signed in with Google, `sign_in_provider == 'google.com'`); no update/delete. |
 | `sessions/{sid}` | **Public read.** Create: signed in with `ownerId == auth.uid` and `organizerIds == [auth.uid]`. Update: organizers; changes to `ownerId`/`organizerIds` owner-only. Delete: owner. |
 | `…/participants/{pid}` | Read: signed in. Player creates/updates **own** (`pid == auth.uid`, `isGuest == false`, status in here/break/left) while `status == live`. Organizers: any, incl. guests (only if `guestsAllowed`). |
@@ -282,7 +282,7 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 - **`npm test`** — engine (both modes × three court rules; groups that don't
   fit; winners-stay cap; ties; leavers; 5-player edge cases), team balancing,
   score-flow transitions, session stats, handle validation, router.
-- **Rules emulator suite** in `tests-rules/` (own `package.json`): cross-session
+- **Rules emulator suite** in `rules-tests/` (own `package.json`): cross-session
   attacks, player writing `live/state`, confirming own team's score, editing
   `results`, co-organizer removing owner, player adding a guest, writes to an
   ended session — all **denied**; normal flows **allowed**.
@@ -298,4 +298,4 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 - `lib/firebase-config.js` stays gitignored; commit only the example.
 - Local development uses the Firebase emulators with the `demo-pickle-boat` project, so no cloud project is needed until go-live.
 
-Both are outward-facing and are done only with the user's explicit go-ahead.
+Creating the repo and the Firebase project are outward-facing and done only with the user's explicit go-ahead.

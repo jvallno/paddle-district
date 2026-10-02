@@ -15,12 +15,12 @@ or code** — each row says *what it is* and *where the real detail lives*.
 |---|---|---|
 | Stack | Vanilla JS ES modules, **no build step**; CDN imports; node `--test` for pure logic. | `AGENTS.md` → Stack & ground rules |
 | Queue engine | `step()` in `lib/queue-engine.js` — pure; derives courts from `matches`, fills free courts per mode (fairness/stacking) and court rule; host commits its output. | `lib/queue-engine.js` header, spec §5 |
-| Game rules (pure) | `handle`, `score-flow`, `session-stats`, `team-balance`, `results` in `lib/`, each with `tests/*.test.js`. | the module headers |
+| Game rules (pure) | `handle`, `profile-input`, `route-access`, `avatar`, `session`, `score-flow`, `session-stats`, `team-balance`, `results` in `lib/`, each with `tests/*.test.js`. | the module headers |
 | Layout | `index.html` → `lib/app.js` (hash router); `features/<name>/` UI; `lib/` services + pure logic; `styles/` tokens. | `AGENTS.md` → Architecture |
 | Rendering | `html` tagged template auto-escapes every `${}`; guard test blocks bare arrays → `innerHTML` and direct `escapeHtml` imports. | `lib/html.js`, `tests/html-usage.test.js` |
 | Auth & routing | `lib/app.js` watches auth + profile → `lib/session.js`; `resolveRoute()` decides signin/setup/ready screens; signed-out deep links resume after sign-in. | `lib/route-access.js`, `lib/session.js` |
 | Firebase locally | localhost → emulators (`demo-pickle-boat`), never production; `npm run emulators`; rules suite `npm run test:rules`. | `lib/firebase.js`, `rules-tests/` |
-| Run / test | `npm run serve` (localhost:5174); `npm test`. | `AGENTS.md` → Run / test |
+| Run / test | `npm run emulators` + `npm run serve` (localhost:5174); `npm test`; `npm run test:rules`. | `AGENTS.md` → Run / test |
 | Carried-over lessons | Deploy via CLI, rules emulator tests, uid-not-email rules, hosting ignore list, offline-tolerant writes. | `AGENTS.md` → Lessons |
 | Inspiration | `../paddle-district` — open-play session, courts, queue, live view + QR, rankings (Firebase, static pages). | sibling repo — **inspiration only; separate system, nothing shared** |
 
