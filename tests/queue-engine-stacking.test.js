@@ -131,3 +131,35 @@ test('earliest-first combination: 3 solos then pair → fills court with 2 solos
   assert.deepEqual(out.entryUpdates, [{ eid: 's1', status: 'assigned' }, { eid: 's2', status: 'assigned' }, { eid: 'p', status: 'assigned' }]);
   assert.deepEqual(out.state.queue.map((q) => q.eid), ['s3']);
 });
+
+test('an entry naming a player missing from participants keeps its place, not ready', () => {
+  const out = run({ ...S, participants: players('a'), entries: [entry('e1', 'a b', { at: 1 })] });
+  assert.deepEqual(out.entryUpdates, []);
+  assert.deepEqual(out.state.queue, [{ eid: 'e1', pids: ['a', 'b'], ready: false }]);
+});
+
+test('with no participants loaded, no entry is cancelled', () => {
+  const out = run({ ...S, participants: [], entries: [entry('e1', 'a', { at: 1 }), entry('e2', 'b', { at: 2 })] });
+  assert.deepEqual(out.entryUpdates, []);
+  assert.equal(out.state.queue.length, 2);
+});
+
+test('malformed entries (3 players, repeated pid) are cancelled without throwing', () => {
+  const out = run({
+    ...S, participants: players('a b c d e f g'),
+    entries: [entry('bad3', 'a b c', { at: 1 }), entry('badrep', 'd d', { at: 2 }),
+      entry('s1', 'e', { at: 3 }), entry('s2', 'f', { at: 4 }), entry('s3', 'g', { at: 5 }), entry('s4', 'a', { at: 6 })],
+  });
+  const cancelled = out.entryUpdates.filter((u) => u.status === 'cancelled').map((u) => u.eid);
+  assert.deepEqual(cancelled, ['bad3', 'badrep']);
+  assert.equal(out.newMatches.length, 1);
+});
+
+test('an unanswered invite does not lock the invitee out of their own solo stack', () => {
+  const entries = [entry('inv', 'b a', { at: 1, accepted: 'b' }), entry('sa', 'a', { at: 2 }),
+    entry('sc', 'c', { at: 3 }), entry('sd', 'd', { at: 4 }), entry('se', 'e', { at: 5 })];
+  const out = run({ ...S, participants: players('a b c d e'), entries });
+  assert.ok(!out.entryUpdates.some((u) => u.eid === 'sa' && u.status === 'cancelled'));
+  assert.deepEqual([...out.newMatches[0].team1, ...out.newMatches[0].team2].sort(), ['a', 'c', 'd', 'e']);
+  assert.deepEqual(out.state.queue, [{ eid: 'inv', pids: ['b', 'a'], ready: false }]);
+});

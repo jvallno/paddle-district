@@ -126,3 +126,50 @@ test('stacking + winners stay: earliest-first fills the court, not greedy first-
   assert.deepEqual(out.entryUpdates, [{ eid: 'p', status: 'assigned' }]);
   assert.deepEqual(out.state.queue.map((q) => q.eid), ['s']);
 });
+
+const noDoubleBooking = (out, matches = []) => {
+  const live = [...matches.filter((m) => m.status === 'playing'), ...out.newMatches];
+  const all = live.flatMap((m) => [...m.team1, ...m.team2]);
+  assert.equal(new Set(all).size, all.length, `double-booked: ${all}`);
+};
+
+test('unpaused court: winners already live on another court are not held or double-booked', () => {
+  const m1 = done('c1', ['a', 'b'], ['c', 'd'], [11, 5], { startedAt: 10, endedAt: 20 });
+  const m2 = { mid: 'm_c2_30', courtId: 'c2', team1: ['a', 'b'], team2: ['e', 'f'], status: 'playing', startedAt: 30 };
+  const out = run({ rule: stay, participants: players('a b c d e f g h'), matches: [m1, m2], courtList: courts(2) });
+  assert.deepEqual(out.state.courts[0].holding, []);
+  assert.equal(out.newMatches.length, 1);
+  assert.deepEqual(out.newMatches[0].streaks, {});
+  noDoubleBooking(out, [m2]);
+});
+
+test('rule changed to winners stay: winners who played a later match elsewhere are not held', () => {
+  const m1 = done('c1', ['a', 'b'], ['c', 'd'], [11, 5], { startedAt: 10, endedAt: 20 });
+  const m2 = done('c2', ['a', 'b'], ['e', 'f'], [5, 11], { startedAt: 30, endedAt: 40 });
+  const out = run({ rule: stay, participants: players('a b c d e f g h'), matches: [m1, m2], courtList: courts(2) });
+  assert.deepEqual(out.state.courts[0].holding, []);
+  const c1 = out.newMatches.find((m) => m.courtId === 'c1');
+  assert.deepEqual(c1.streaks, {});
+  noDoubleBooking(out);
+});
+
+test('stacking + winners stay: held winners are released when only a ready group of 4 fits', () => {
+  const out = run({
+    mode: 'stacking', rule: stay, participants: players('a b c d g h i j'),
+    entries: [entry('g', 'g h i j', { at: 1 })], matches: [firstGame()],
+  });
+  assert.deepEqual(teams(out), [['g', 'h'], ['i', 'j']]);
+  assert.deepEqual(out.newMatches[0].streaks, {});
+  assert.deepEqual(out.state.courts[0].holding, []);
+  assert.deepEqual(out.entryUpdates, [{ eid: 'g', status: 'assigned' }]);
+});
+
+test('makeId gets the match context: court and previous match on it', () => {
+  const calls = [];
+  run({ participants: players('a b c d e f g h'), courtList: courts(2), makeId: (ctx) => { calls.push(ctx); return `x${calls.length}`; },
+    matches: [firstGame()] });
+  assert.deepEqual(calls, [
+    { kind: 'match', courtId: 'c1', prevMid: 'm_c1_10' },
+    { kind: 'match', courtId: 'c2', prevMid: null },
+  ]);
+});

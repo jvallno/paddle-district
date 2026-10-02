@@ -27,12 +27,12 @@ export function entry(eid, pids, { at = 0, accepted, status = 'open' } = {}) {
   return { eid, players: ps, accepted: accepted ? accepted.split(' ') : ps, status, createdAt: at };
 }
 
-export function run({ mode = 'fairness', rule = { type: 'everyoneOff' }, courtList = courts(1), participants, entries = [], matches = [], now = 1000 }) {
+export function run({ mode = 'fairness', rule = { type: 'everyoneOff' }, courtList = courts(1), participants, entries = [], matches = [], now = 1000, makeId }) {
   let n = 0;
   return step({
     config: { mode, courtRule: rule, courts: courtList },
     participants, entries, matches, now,
-    makeId: () => `new${++n}`,
+    makeId: makeId ?? (() => `new${++n}`),
   });
 }
 

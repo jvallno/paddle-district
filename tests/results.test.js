@@ -49,8 +49,19 @@ test('override that keeps the same score adds nothing', () => {
   assert.deepEqual(pendingResults([m], people, 's1', ids()), []);
 });
 
-test('a player missing from participants is logged as a guest; no endedAt falls back to start', () => {
+test('a player missing from participants is logged by pid as a real player; no endedAt falls back to start', () => {
   const [out] = pendingResults([match({ team2: ['zz', 'c'], endedAt: undefined })], people, 's1', ids());
-  assert.deepEqual(out.result.team2[0], { uid: null, isGuest: true });
+  assert.deepEqual(out.result.team2[0], { uid: 'zz', isGuest: false });
   assert.equal(out.result.playedAt, 100);
+});
+
+test('a missing g_ pid is logged as a guest', () => {
+  const [out] = pendingResults([match({ team2: ['g_zz', 'c'] })], people, 's1', ids());
+  assert.deepEqual(out.result.team2[0], { uid: null, isGuest: true });
+});
+
+test('makeId gets the result context', () => {
+  const calls = [];
+  pendingResults([match()], people, 's1', (ctx) => { calls.push(ctx); return 'r1'; });
+  assert.deepEqual(calls, [{ kind: 'result', mid: 'm1', sig: '11-7' }]);
 });
