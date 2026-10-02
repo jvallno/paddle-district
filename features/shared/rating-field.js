@@ -10,8 +10,8 @@ export function ratingFieldHtml(selected) {
       <select class="input" name="selfRating">
         ${ratingOptions().map((r) => html`<option value="${r}" ${r === selected ? 'selected' : ''}>${r.toFixed(1)} · ${levelFor(r).label}</option>`)}
       </select>
-      <span class="field__hint" data-level-hint>${level ? level.hint : ''}</span>
-      <span class="field__error" data-error="selfRating"></span>
+      <span class="field__hint" data-level-hint aria-live="polite">${level ? level.hint : ''}</span>
+      <span class="field__error" data-error="selfRating" aria-live="polite"></span>
     </label>`;
 }
 

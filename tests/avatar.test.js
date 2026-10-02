@@ -28,3 +28,8 @@ test('avatarHtml falls back to escaped initials', () => {
   assert.match(String(avatarHtml({ displayName: '<b>ob' })), />&lt;<\/span>$/);
   assert.match(String(avatarHtml(null)), />\?<\/span>$/);
 });
+
+test('avatarHtml ignores non-https photo URLs', () => {
+  assert.doesNotMatch(String(avatarHtml({ displayName: 'Ana', photoURL: 'javascript:alert(1)' })), /<img/);
+  assert.doesNotMatch(String(avatarHtml({ displayName: 'Ana', photoURL: 'http://x/a.png' })), /<img/);
+});

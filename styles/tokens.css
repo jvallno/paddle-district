@@ -10,6 +10,7 @@
   --color-primary-bright: #5d814c; /* live/active highlights, large text only */
   --color-accent: #c9d64a;         /* pickleball yellow-green: Team 2, "you're up", alerts */
   --color-accent-ink: #273635;     /* text on accent */
+  --color-on-dark: #ffffff;        /* text/icons on brand/dark surfaces */
 
   /* Neutrals */
   --color-bg: #f3f5f1;
@@ -26,9 +27,9 @@
   /* Avatars without a photo (lib/avatar.js avatarIndex → 0…5) */
   --avatar-0: #577047;
   --avatar-1: #384d3e;
-  --avatar-2: #5d814c;
+  --avatar-2: #4f6f40;
   --avatar-3: #4e5650;
-  --avatar-4: #6b7f3a;
+  --avatar-4: #55662e;
   --avatar-5: #2f5a4a;
 
   /* Type */

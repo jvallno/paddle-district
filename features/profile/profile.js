@@ -7,7 +7,9 @@ import { levelFor } from '../../lib/profile-input.js';
 import { findByHandle } from '../../lib/profiles.js';
 
 export function init(container, param) {
-  const handle = normalizeHandle(decodeURIComponent(param ?? ''));
+  let raw = param ?? '';
+  try { raw = decodeURIComponent(raw); } catch { /* malformed escape → treated as an invalid handle below */ }
+  const handle = normalizeHandle(raw);
   let alive = true;
   container.addEventListener('view:teardown', () => { alive = false; }, { once: true });
 

@@ -24,13 +24,13 @@ export function init(container) {
         <label class="field">
           <span class="field__label">Name</span>
           <input class="input" name="displayName" value="${name}" maxlength="${NAME_MAX}" autocomplete="name" required>
-          <span class="field__error" data-error="displayName"></span>
+          <span class="field__error" data-error="displayName" aria-live="polite"></span>
         </label>
         <label class="field">
           <span class="field__label">Handle</span>
           <span class="input-prefix"><span>@</span><input class="input" name="handle" value="${suggestHandle(name)}" maxlength="20" autocapitalize="off" autocomplete="off" spellcheck="false"></span>
-          <span class="field__hint" data-handle-status>Players can search for you by this.</span>
-          <span class="field__error" data-error="handle"></span>
+          <span class="field__hint" data-handle-status aria-live="polite">Players can search for you by this.</span>
+          <span class="field__error" data-error="handle" aria-live="polite"></span>
         </label>
         ${ratingFieldHtml(DEFAULT_SELF_RATING)}
         <button class="btn btn--primary" type="submit">Create profile</button>

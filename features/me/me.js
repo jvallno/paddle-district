@@ -38,7 +38,7 @@ export function init(container) {
         <label class="field">
           <span class="field__label">Name</span>
           <input class="input" name="displayName" value="${p.displayName}" maxlength="${NAME_MAX}" autocomplete="name">
-          <span class="field__error" data-error="displayName"></span>
+          <span class="field__error" data-error="displayName" aria-live="polite"></span>
         </label>
         ${ratingFieldHtml(p.selfRating)}
         <button class="btn btn--primary" type="submit">Save</button>
