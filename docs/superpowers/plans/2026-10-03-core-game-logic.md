@@ -1457,3 +1457,11 @@ git add docs/superpowers/specs/2026-10-03-profiles-and-live-queue-design.md docs
 git commit -m "docs: record core-logic spec deltas; index plan 1"
 ```
 
+
+## Carried forward to Plan 3 (from reviews)
+
+- Host should derive deterministic ids from `makeId` context (`${courtId}_${prevMid}` for matches, `${mid}_${sig}` for results) so a takeover or overlapping hosts can't create duplicate matches or results.
+- UI: show "waiting for a partner" when a solo can't fit behind pairs; warn "already in line" before inviting a player who has an earlier entry (that invite would be cancelled).
+- A player swapped after a match was logged produces no correction (`loggedSig` covers score only) — revisit if swaps after scoring become common.
+- Clients must always write `accepted` (creator included) on queue entries; an entry without it is never ready.
+- Stacking search cost grows with queue length (fine for open-play sizes; revisit past ~100 entries).
