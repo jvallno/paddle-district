@@ -59,6 +59,8 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | 2026-10-03 | Product split into 4 sub-projects: #1 profiles, #2 clubs & events, #3 live queue, #4 stats/rating/community. | Too big for one spec; #1+#3 first. |
 | 2026-10-03 | Verified = signed in with Google; phone/club/rating badges deferred to "Pro". | Keep v1 simple. |
 | 2026-10-03 | In-house DUPR-style margin-based rating (in #4), fed by append-only `results`. | DUPR partnership too hard for now. |
-| 2026-10-03 | Brand palette: greens #273635 #384d3e #4e5650 #577047 #5d814c + accent #c9d64a. | User-chosen brand. |
+| 2026-10-03 | ~~Brand palette greens #273635…~~ → **superseded**: v2 keeps **v1's branding** (mascot logo, Montserrat, army #4A5C2F / lime #8FB339 / gold #D4A017, light/dark toggle). | User wants Paddle District to look like v1; spec §7. |
+| 2026-10-03 | Accounts optional with nudging: v1's name-only roster + self check-in stay; signed-in players get profiles; organizers can link a name to a profile. Google is the only sign-in. | Keep v1's zero-friction check-in while moving players onto profiles. |
+| 2026-10-03 | v2 = every v1 feature + new ones. Order: Step 1 rebrand → Plan 3 sessions (with v1 parity) → clubs/events → ratings/community, step by step with a localhost check and deploy on request. | Smooth, incremental rollout. |
 | 2026-10-03 | Emulator-first: localhost always uses Firebase emulators with a demo project. | Build and test everything without a cloud project; local can't touch prod. |
 | 2026-10-03 | @handle fixed after creation; Google photo, no upload; badges denied by rules until "Pro". | Keep v1 simple; uniqueness stays trivially correct. |

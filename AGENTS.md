@@ -29,8 +29,8 @@ request: `npx --prefix rules-tests firebase deploy --only firestore:rules` /
   transpiler. The browser loads `index.html` → `/lib/app.js` directly.
 - Third-party code comes from CDNs as ES modules (Firebase from `gstatic`,
   pinned to one version across all imports; others from `jsdelivr`/`cdnjs`).
-- Fonts: **Space Grotesk** (display), **Inter** (body), **Space Mono** (mono) —
-  placeholders until the design phase.
+- Brand: **v1's Paddle District look** — Montserrat only, army/lime/gold tokens
+  with light + dark themes, mascot logo (spec §7). Never hard-code colors.
 - Do **not** add a build tool, TypeScript, or a package-manager dependency for
   the app itself without a strong reason — zero-build simplicity is a feature.
   Test-only tooling lives in its own folder with its own `package.json`.

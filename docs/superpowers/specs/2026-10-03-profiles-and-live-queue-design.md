@@ -50,19 +50,20 @@ else independently; nothing is migrated or imported from it.
 
 | Topic | Decision |
 |---|---|
-| Verified user | **Signed in with Google** = verified for now. Phone / club-approved / rating-verified badges and per-session badge requirements are deferred to a later "Pro" stage. |
+| Verified user | **Signed in with Google** = verified — and Google is the **only** sign-in method (no email/password, unlike v1; decided 2026-10-03). Phone / club-approved / rating-verified badges and per-session badge requirements are deferred to a later "Pro" stage. |
 | Who can organize | **Any account** can create sessions. "Organizer" is a per-session role, not an account type. |
 | Roles per session | **Owner** (everything, incl. managing co-organizers, delete) · **Co-organizer** (run the floor, settle scores, be host, end/continue) · **Player** (own actions only). |
 | Queue model | **One engine, mode chosen per session:** *fairness* or *stacking*, plus a court rule: *everyone off*, *winners stay (max N)*, *winners split*. |
 | Score reporting | A player in the match **submits**, a player on the **opposing team confirms**, organizers can **override**. Court frees on submit. |
-| Getting in | **Scan session QR** at the venue (`#/join/{sid}`) **or organizer searches & adds** a verified profile. RSVP check-in comes with #2. |
-| Guests | Organizer can add a guest by name if the session allows guests. Guests play and appear on **that session's** courts/queue/leaderboard only — never in `results`, ratings, or cross-session stats; no profile. |
+| Getting in | **Scan session QR** at the venue (`#/join/{sid}`) **or organizer searches & adds** a verified profile. RSVP check-in comes with #2. **Accounts are optional (v1 parity, decided 2026-10-03):** the session QR also offers v1's name-only self check-in (pick your name from the roster; names not on it wait for organizer approval), with a prominent "Sign in to save your stats" nudge; organizers can later link a name-only player to a real profile. Details land in Plan 3. |
+| Guests (name-only players) | Name-only players come from a pasted roster (v1's import), name-only self check-in, or an organizer adding a name, if the session allows them. Guests play and appear on **that session's** courts/queue/leaderboard only — never in `results`, ratings, or cross-session stats; no profile. |
 | Rating | In-house **DUPR-style, margin-based** rating (2.000–8.000, reliability %), built in #4. Spec 1 only stores a **self-rating** and the results log. |
 | Backend | **Firebase** (Auth + Firestore + Hosting) in a **new Firebase project** dedicated to Paddle District. **Host-device** architecture (§5). |
 | Repo | **New GitHub repository** for Paddle District. |
 | Relationship to v1 | **Rebuild with separate data** — no shared code, Firebase project, users, or data with v1 (original owner's project); v1 is inspiration only. |
 | Environments | **Two only:** **Local** (Firebase emulators, `demo-paddle-district`) and **Live** — the user's own Firebase project `paddle-district-v2` (Firestore in `asia-southeast1`), served at https://paddle-district-v2.web.app. |
-| Brand palette | Greens `#273635 #384d3e #4e5650 #577047 #5d814c` + one accent, pickleball yellow-green `~#c9d64a` (§7). |
+| Brand | **v1's Paddle District branding, unchanged** (decided 2026-10-03; replaces the earlier green palette): logo mascot badge, Montserrat, army green + lime + gold, light/dark toggle (§7). |
+| v1 parity | v2 keeps **every v1 feature** and adds the new ones; v1-only features (paste roster, name-only check-in + approval, On hold, cancel match, edit past score, export CSV/JSON, end/continue, share link + QR toggles, live view) are built in Plan 3. Order: Step 1 rebrand → Plan 3 sessions with v1 parity → clubs/events → ratings/community. |
 
 ## 3. Scope
 
@@ -216,23 +217,43 @@ behind sign-in.
 Leaderboard columns and tiebreaks follow paddle-district (Wins, Points, Win%,
 Pt%, GP, score diff), computed by `lib/session-stats.js`.
 
-## 7. Visual tokens
+## 7. Brand & visual system (v1 branding, decided 2026-10-03)
 
-Placed in `styles/tokens.css`; feature CSS uses tokens only.
+v2 keeps Paddle District v1's look. All values live in `styles/tokens.css`;
+feature CSS uses tokens only. The theme is a `data-theme="light|dark"`
+attribute on `<html>`: a first visit follows the device setting, and the
+🌙/☀️ toggle saves the choice on that device.
 
-| Token | Value | Use |
-|---|---|---|
-| `--color-text` | `#273635` | Body text (light); TV background |
-| `--color-brand-dark` | `#384d3e` | Top bar, headers, TV court cards |
-| `--color-primary` | `#577047` | Buttons/links (white text 5.5:1, AA) |
-| `--color-primary-bright` | `#5d814c` | Live/active highlights, large text only (white 4.4:1) |
-| `--color-muted` | `#4e5650` | Secondary text, timers |
-| `--color-accent` | `#c9d64a` (pickleball yellow-green) | Team 2, "You're up next", alerts — with dark text |
-| `--color-bg` / `--color-surface` | `#f3f5f1` / `#ffffff` | Light phone screens |
-| success / danger | standard green / red | Status messages only |
+| Role | Light | Dark | Use |
+|---|---|---|---|
+| Brand (army) | `#4A5C2F` | header `#2E3820` | Header bar, primary buttons (white text 7.3:1) |
+| Brand dark | `#38471F` | `#243018` | Session bar, pressed states |
+| Accent (lime) | `#8FB339` | same | Positive actions, "Add" — **dark text only** (6.9:1; white fails at 2.4:1) |
+| Highlight (gold) | `#D4A017` | same | Team 2, "You're up next", level pills, medals (dark text 7.0:1) |
+| Danger | `#C0392B` | same | Delete, end session (white 5.4:1) |
+| Page / card / card 2 | `#F5F6F0` / `#FFFFFF` / `#F0F2EA` | `#1A1C14` / `#252819` / `#2E3220` | Backgrounds |
+| Text / text 2 / muted | `#1C1F14` / `#3A3F2A` / `#6B7254` | `#EEF0E8` / `#CDD1BE` / `#8A9470` | Text (muted ≥ 4.6:1 both themes) |
+| Line | `#D8DDD0` | `#3A3F2A` | Borders |
+| Pale tint | `#EEF2E6` | `#2A3318` | Present/playing rows, hovers |
 
-Team 1 = brand green, Team 2 = accent. Fonts stay as in AGENTS.md until the
-design phase.
+- **Type:** Montserrat only (400–900), base 15 px; headings 800; scores and
+  timers use tabular numbers.
+- **Logo:** v1's mascot badge as a web-sized copy (`assets/logo-512.png`) in
+  the header's round white badge and on the sign-in card; v1's `favicon.png`
+  is the browser/home-screen icon.
+- **Shape:** 10 px radius, soft card shadows, sticky army header, pill buttons
+  for small actions.
+- **Teams:** Team 1 = army green, Team 2 = gold.
+
+**UI-friendly rules (all screens):** tap targets ≥ 44 px (inputs 48 px);
+text ≥ 15 px; visible focus rings; errors inline under the field (not only
+toasts) and focus moves to the first error; busy buttons say what they're
+doing and can't be double-submitted; every empty or error screen offers a next
+step; layouts work from 320 px phones up; reduced-motion respected.
+
+**Sign-in** mirrors v1's login card: theme toggle, logo, "Paddle District",
+"PICKLEBALL COMMUNITY · VERSION 2", a one-line pitch, and a white "Continue
+with Google" button with the Google mark — no email form.
 
 ## 8. Security rules (summary)
 
