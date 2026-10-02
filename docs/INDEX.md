@@ -30,7 +30,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 
 | Date | Spec | Summary |
 |---|---|---|
-| — | *(none yet — product brainstorm next)* | |
+| 2026-10-03 | [Profiles & live queue](superpowers/specs/2026-10-03-profiles-and-live-queue-design.md) | Spec 1 (sub-projects #1 + #3): Google-verified profiles, per-session organizers, one queue engine (fairness / stacking + court rules), submit→confirm scores, host-device lease, public TV view, append-only results log. **Draft — awaiting review.** |
 
 ## Plans (`docs/superpowers/plans/`)
 
@@ -43,4 +43,9 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | Date | Decision | Why |
 |---|---|---|
 | 2026-10-03 | Same zero-build vanilla-JS setup as inventory-tracking-system. | Proven conventions, no framework churn, easy for agents to follow. |
-| — | Backend (likely Firebase, like paddle-district) | **Open** — decide during brainstorm. |
+| 2026-10-03 | Backend = Firebase (Auth + Firestore + Hosting) in a **new** project; new GitHub repo. | Proven lessons; free tier; offline cache. |
+| 2026-10-03 | **Host-device** runs the pure queue engine; players write intents only. | No conflicting writes without Cloud Functions; engine can move server-side later unchanged. |
+| 2026-10-03 | Product split into 4 sub-projects: #1 profiles, #2 clubs & events, #3 live queue, #4 stats/rating/community. | Too big for one spec; #1+#3 first. |
+| 2026-10-03 | Verified = signed in with Google; phone/club/rating badges deferred to "Pro". | Keep v1 simple. |
+| 2026-10-03 | In-house DUPR-style margin-based rating (in #4), fed by append-only `results`. | DUPR partnership too hard for now. |
+| 2026-10-03 | Brand palette: greens #273635 #384d3e #4e5650 #577047 #5d814c + accent #c9d64a. | User-chosen brand. |
