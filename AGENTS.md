@@ -30,12 +30,20 @@ users, or data with paddle-district.
 ## Run / test
 
 ```bash
-npm run serve   # python3 serve.py 5174 → http://localhost:5174 (no-cache)
-npm test        # node --test → unit tests for the pure lib/ modules
+npm run emulators   # Firebase auth + Firestore emulators (demo-pickle-boat) — needs Java 21+
+npm run serve       # python3 serve.py 5174 → http://localhost:5174 (no-cache)
+npm test            # node --test → unit tests for the pure lib/ modules
+npm run test:rules  # Firestore security-rules suite on the emulator
 ```
 
-Always run `npm test` before claiming a change is done. Verify on **localhost
-first**; only deploy on an explicit go-ahead.
+First time: `npm --prefix rules-tests install`. Java: if `java -version` fails,
+`rules-tests/with-java.sh` uses a user-space JDK in `~/.local/jdk` (see Plan 2,
+Task 2, Step 0). On localhost the app always talks to the emulators, so local
+work never touches production and needs no `lib/firebase-config.js`.
+
+Always run `npm test` (and `npm run test:rules` after any `firestore.rules`
+change) before claiming a change is done. Verify on **localhost first**; only
+deploy on an explicit go-ahead.
 
 ## Architecture
 
@@ -50,12 +58,12 @@ docs/superpowers/   # specs/ (design) and plans/ (implementation) per feature
 
 ### `lib/` — two kinds of module
 
-- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`.
+- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`, `profile-input`, `route-access`, `avatar`, `session`.
   **These have `tests/*.test.js` and must stay import-free of DOM/Firebase** so
   they run under `node --test`. Put all game/queue/ranking rules here and test
   them — that's where the bugs hide.
-- **Browser / services** (touch the DOM or a backend): `app` (routes + boot),
-  `router.createRouter`, `toast`, `confirm`.
+- **Browser / services** (touch the DOM or a backend): `app` (auth → session → guarded routes),
+  `router.createRouter`, `firebase`, `auth`, `profiles`, `qr`, `toast`, `confirm`.
 
 ### `features/<name>/` — the UI convention
 

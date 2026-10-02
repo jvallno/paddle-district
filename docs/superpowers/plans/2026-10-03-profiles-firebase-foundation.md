@@ -41,6 +41,9 @@ Inputs the spec implies but doesn't spell out, most likely to bite first. Each i
 - First-time profile setup needs a connection (the batch is awaited). Later edits are offline-tolerant.
 - A new player's unconfirmed local profile write doesn't count until the server confirms it (`statusForProfile`).
 - On localhost the app always uses the emulators (`demo-pickle-boat`). `lib/firebase-config.js` is only needed off localhost.
+- Rules enforce Google as the sign-in provider (`sign_in_provider == 'google.com'`), not just the UI (review fix).
+- Profiles: `displayName` must contain a non-space; `photoURL` must be empty or https (rules), and avatars only render https photos (review fix).
+- A cache-only "no profile" snapshot doesn't count (`statusForProfile(…, fromCache)`), so an offline returning player isn't sent to setup; a stalled load shows a recovery screen (review fix).
 
 ## File structure
 

@@ -82,8 +82,8 @@ guest history.
 
 | Path | Contents | Written by |
 |---|---|---|
-| `users/{uid}` | `displayName`, `handle`, `photoURL`, `selfRating` (2.0–8.0, step 0.5), `createdAt` | Owner only |
-| `handles/{handle}` | `{ uid }` — guarantees unique `@handle` (lower-case, `[a-z0-9_]{3,20}`) | Owner, same batch as profile; create-only |
+| `users/{uid}` | `displayName`, `handle`, `photoURL` (the Google account photo; no upload yet), `selfRating` (2.0–8.0, step 0.5), `createdAt` | Owner only |
+| `handles/{handle}` | `{ uid }` — guarantees unique `@handle` (lower-case, `[a-z0-9_]{3,20}`) | Owner, same batch as profile; create-only. Fixed after creation (never changed or freed). |
 
 ### 4.2 Sessions
 
@@ -237,8 +237,8 @@ Match by Auth **uid** only — never `email_verified`.
 
 | Data | Rule |
 |---|---|
-| `users/{uid}` | Read: signed in. Create/update: `uid == auth.uid`. |
-| `handles/{h}` | Create only if absent and `uid == auth.uid`; no update/delete. |
+| `users/{uid}` | Read: signed in. Create/update: `uid == auth.uid`. "Signed in" means signed in with Google: rules check `request.auth.token.firebase.sign_in_provider == 'google.com'`. `displayName` must contain a non-space; `photoURL` must be empty or `https://`. |
+| `handles/{h}` | Create only if absent and `uid == auth.uid` (signed in with Google, `sign_in_provider == 'google.com'`); no update/delete. |
 | `sessions/{sid}` | **Public read.** Create: signed in with `ownerId == auth.uid` and `organizerIds == [auth.uid]`. Update: organizers; changes to `ownerId`/`organizerIds` owner-only. Delete: owner. |
 | `…/participants/{pid}` | Read: signed in. Player creates/updates **own** (`pid == auth.uid`, `isGuest == false`, status in here/break/left) while `status == live`. Organizers: any, incl. guests (only if `guestsAllowed`). |
 | `…/queueEntries/{eid}` | Read: signed in. Player creates entries containing themselves; partners may only append themselves to `accepted`; creator may cancel. Organizers: any. |
@@ -252,6 +252,7 @@ Match by Auth **uid** only — never `email_verified`.
 - Firestore **persistent local cache** on; writes queue offline and sync later;
   a sync dot shows saved / syncing / offline. Every write stamps `clientAt`.
 - No host → "Queue paused" banner (§5.6).
+- First-time profile setup needs a connection (its batch is awaited); a new player's unconfirmed local profile write doesn't count until the server confirms it, so a rejected handle never bounces the app off the setup screen. If the profile can't load (an error, or still loading after 10 s) the app shows a "Can't reach Pickle Boat" screen with Try again and Sign out.
 - Duplicates: deterministic solo entry ids; engine keeps the earliest entry if a
   player appears in more than one.
 - Player leaves mid-game → court continues; organizer swaps. Player leaves while
@@ -295,5 +296,6 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 - Create a **new Firebase project** (Auth: Google provider; Firestore; Hosting);
   add the Hosting domain to Auth **authorized domains**.
 - `lib/firebase-config.js` stays gitignored; commit only the example.
+- Local development uses the Firebase emulators with the `demo-pickle-boat` project, so no cloud project is needed until go-live.
 
 Both are outward-facing and are done only with the user's explicit go-ahead.
