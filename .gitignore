@@ -1,8 +1,38 @@
-node_modules/
-.DS_Store
+# --- Secrets & credentials (this repo is PUBLIC) -----------------------------
+# Live Firebase web config — only the example is committed.
 lib/firebase-config.js
+lib/firebase-config.*.js
+!lib/firebase-config.example.js
+# Env files, keys, certificates, service accounts (e.g. for CI deploys)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*service-account*.json
+*-credentials.json
+gha-creds-*.json
+
+# --- Firebase local state ------------------------------------------------------
+.firebase/
+*-debug.log
+*.log
+# Emulator data exports (may contain copied user data)
+emulator-data/
+firebase-export-*/
+# Auth exports (contain emails/uids)
+auth-export*.json
+
+# --- Dependencies & tooling ---------------------------------------------------
+node_modules/
 .superpowers/
 .claude/
 .playwright-mcp/
-.firebase/
-*-debug.log
+
+# --- OS / editor clutter --------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
