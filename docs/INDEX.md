@@ -19,8 +19,9 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | Layout | `index.html` → `lib/app.js` (hash router); `features/<name>/` UI; `lib/` services + pure logic; `styles/` tokens. | `AGENTS.md` → Architecture |
 | Rendering | `html` tagged template auto-escapes every `${}`; guard test blocks bare arrays → `innerHTML` and direct `escapeHtml` imports. | `lib/html.js`, `tests/html-usage.test.js` |
 | Auth & routing | `lib/app.js` watches auth + profile → `lib/session.js`; `resolveRoute()` decides signin/setup/ready screens; signed-out deep links resume after sign-in. | `lib/route-access.js`, `lib/session.js` |
-| Firebase locally | localhost → emulators (`demo-paddle-district`), never production; `npm run emulators`; rules suite `npm run test:rules`. | `lib/firebase.js`, `rules-tests/` |
-| Run / test | `npm run emulators` + `npm run serve` (localhost:5174); `npm test`; `npm run test:rules`. | `AGENTS.md` → Run / test |
+| Firebase locally | localhost → LIVE data by default; `?emulators` → sandbox (`demo-paddle-district`, `npm run emulators`); corner badge; rules suite `npm run test:rules`. | `lib/data-mode.js`, `lib/firebase.js`, `rules-tests/` |
+| Run / test | `npm run serve` (localhost:5174, live data; add `?emulators` + `npm run emulators` for sandbox); `npm test`; `npm run test:rules`. | `AGENTS.md` → Run / test |
+| Brand & theme | v1 look: tokens (light + dark) in styles/tokens.css; lib/theme-choice.js (pure) + lib/theme.js; inline pre-paint script in index.html; assets/ (logo-512, favicon). | spec §7 |
 | Carried-over lessons | Deploy via CLI, rules emulator tests, uid-not-email rules, hosting ignore list, offline-tolerant writes. | `AGENTS.md` → Lessons |
 | Live server | https://paddle-district-v2.web.app — Firebase project `paddle-district-v2` (user-owned; Firestore `asia-southeast1`; Google sign-in). Deploy via CLI on explicit request only. | `AGENTS.md` → v2 note, `.firebaserc` |
 | v1 (original app) | Paddle District v1 — static pages: open-play session, courts, queue, live view + QR, rankings (Realtime Database, original owner's Firebase project). | `main` branch of this repo / `../paddle-district` — **inspiration only; v2 shares no code or data** |
@@ -45,6 +46,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 
 | Date | Plan | Summary |
 |---|---|---|
+| 2026-10-03 | [Step 1 — Rebrand](superpowers/plans/2026-10-03-rebrand-v1-look.md) | v1 branding + UI-friendly rules on existing screens. |
 | 2026-10-03 | [Core game logic](superpowers/plans/2026-10-03-core-game-logic.md) | Spec 1 · Plan 1/3 — pure `lib/` rules: handles, score flow, session stats, team balance, queue engine, results log. |
 | 2026-10-03 | [Profiles & Firebase foundation](superpowers/plans/2026-10-03-profiles-firebase-foundation.md) | Spec 1 · Plan 2/3 — emulator-first Firebase, rules + emulator suite, sign-in, profiles, player card. |
 
@@ -62,5 +64,5 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | 2026-10-03 | ~~Brand palette greens #273635…~~ → **superseded**: v2 keeps **v1's branding** (mascot logo, Montserrat, army #4A5C2F / lime #8FB339 / gold #D4A017, light/dark toggle). | User wants Paddle District to look like v1; spec §7. |
 | 2026-10-03 | Accounts optional with nudging: v1's name-only roster + self check-in stay; signed-in players get profiles; organizers can link a name to a profile. Google is the only sign-in. | Keep v1's zero-friction check-in while moving players onto profiles. |
 | 2026-10-03 | v2 = every v1 feature + new ones. Order: Step 1 rebrand → Plan 3 sessions (with v1 parity) → clubs/events → ratings/community, step by step with a localhost check and deploy on request. | Smooth, incremental rollout. |
-| 2026-10-03 | Emulator-first: localhost always uses Firebase emulators with a demo project. | Build and test everything without a cloud project; local can't touch prod. |
+| 2026-10-03 | Localhost uses LIVE data by default (like inventory-tracking-system); `?emulators` = sandbox; corner badge shows which. | User wants real data locally; sandbox kept for safe experiments and automated checks. |
 | 2026-10-03 | @handle fixed after creation; Google photo, no upload; badges denied by rules until "Pro". | Keep v1 simple; uniqueness stays trivially correct. |

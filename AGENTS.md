@@ -13,7 +13,7 @@ only — **v2 shares no code, Firebase project, users, or data with v1** (v1 use
 the original owner's Firebase project; v2 uses its own live project
 `paddle-district-v2`). Repo: `jvallno/paddle-district` (a fork); v2 work happens on `next`.
 
-**Two environments only:** local (emulators) and live
+**Two environments only:** local (live data by default; `?emulators` sandbox) and live
 (https://paddle-district-v2.web.app). Deploy from the CLI, only on an explicit
 request: `npx --prefix rules-tests firebase deploy --only firestore:rules` /
 `--only hosting` (hosting's predeploy refuses without the gitignored
@@ -39,15 +39,19 @@ request: `npx --prefix rules-tests firebase deploy --only firestore:rules` /
 
 ```bash
 npm run emulators   # Firebase auth + Firestore emulators (demo-paddle-district) — needs Java 21+
-npm run serve       # python3 serve.py 5174 → http://localhost:5174 (no-cache)
+npm run serve       # python3 serve.py 5174 → http://localhost:5174 (no-cache), LIVE data (paddle-district-v2)
+                    # http://localhost:5174/?emulators → throwaway sandbox on the emulators
 npm test            # node --test → unit tests for the pure lib/ modules
 npm run test:rules  # Firestore security-rules suite on the emulator
 ```
 
 First time: `npm --prefix rules-tests install`. Java: if `java -version` fails,
 `rules-tests/with-java.sh` uses a user-space JDK in `~/.local/jdk` (see Plan 2,
-Task 2, Step 0). On localhost the app always talks to the emulators, so local
-work never touches production and needs no `lib/firebase-config.js`.
+Task 2, Step 0). On localhost the app uses **LIVE data by default** (project
+`paddle-district-v2`; needs the gitignored `lib/firebase-config.js`); add `?emulators`
+to use the emulator sandbox. A corner badge shows "LIVE DATA" or "Sandbox · emulators".
+**Caveat:** anything done on localhost in live mode is real (e.g. @handles can never
+be deleted). Rules tests always use the emulator; automated browser checks must use `?emulators`.
 
 Always run `npm test` (and `npm run test:rules` after any `firestore.rules`
 change) before claiming a change is done. Verify on **localhost first**; only
@@ -59,6 +63,7 @@ deploy on an explicit go-ahead.
 index.html          # shell: loads every stylesheet + /lib/app.js
 lib/                # shared services + PURE logic (node-tested)
 features/<name>/    # self-contained UI features: <name>.js (init) + <name>.css
+assets/            # logo-512.png, favicon.png (from v1)
 styles/             # tokens.css (design vars) + base/modal/toast css
 tests/              # node --test suites for the pure lib/ modules
 docs/superpowers/   # specs/ (design) and plans/ (implementation) per feature
@@ -66,12 +71,12 @@ docs/superpowers/   # specs/ (design) and plans/ (implementation) per feature
 
 ### `lib/` — two kinds of module
 
-- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`, `profile-input`, `route-access`, `avatar`, `session`.
+- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`, `profile-input`, `route-access`, `avatar`, `session`, `theme-choice` (light/dark choice), `data-mode` (live vs emulators).
   **These have `tests/*.test.js` and must stay import-free of DOM/Firebase** so
   they run under `node --test`. Put all game/queue/ranking rules here and test
   them — that's where the bugs hide.
 - **Browser / services** (touch the DOM or a backend): `app` (auth → session → guarded routes),
-  `router.createRouter`, `firebase`, `auth`, `profiles`, `qr`, `toast`, `confirm`.
+  `router.createRouter`, `firebase`, `auth`, `profiles`, `qr`, `toast`, `confirm`, `theme`.
 
 ### `features/<name>/` — the UI convention
 

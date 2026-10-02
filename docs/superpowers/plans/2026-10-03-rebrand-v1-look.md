@@ -36,6 +36,8 @@
 - New token `--color-link` (army in light, lime in dark) — army-green links are unreadable on dark backgrounds (2.4:1).
 - New token `--color-qr-bg` (#FFFFFF in both themes).
 - Light muted text is `#636A4D` and dark muted `#9AA380` (v1's `#6B7254` / `#8A9470` measured 4.47:1 and 4.11:1 on secondary surfaces — just under AA).
+- Review fixes: --color-danger-text for dark-mode errors; default toast on army dark; brand surfaces tokenized (--color-logo-bg, --color-google-bg/ink); .btn--sm ≥ 44 px; dead .import-* modal rules removed.
+- Localhost uses live data by default; ?emulators sandbox (lib/data-mode.js, b92d0be).
 
 ---
 

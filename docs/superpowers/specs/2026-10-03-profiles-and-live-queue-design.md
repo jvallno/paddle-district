@@ -61,7 +61,7 @@ else independently; nothing is migrated or imported from it.
 | Backend | **Firebase** (Auth + Firestore + Hosting) in a **new Firebase project** dedicated to Paddle District. **Host-device** architecture (§5). |
 | Repo | **New GitHub repository** for Paddle District. |
 | Relationship to v1 | **Rebuild with separate data** — no shared code, Firebase project, users, or data with v1 (original owner's project); v1 is inspiration only. |
-| Environments | **Two only:** **Local** (Firebase emulators, `demo-paddle-district`) and **Live** — the user's own Firebase project `paddle-district-v2` (Firestore in `asia-southeast1`), served at https://paddle-district-v2.web.app. |
+| Environments | **Two only:** **Local** (localhost against the live project by default, or the Firebase emulators with `?emulators`) and **Live** — the user's own Firebase project `paddle-district-v2` (Firestore in `asia-southeast1`), served at https://paddle-district-v2.web.app. |
 | Brand | **v1's Paddle District branding, unchanged** (decided 2026-10-03; replaces the earlier green palette): logo mascot badge, Montserrat, army green + lime + gold, light/dark toggle (§7). |
 | v1 parity | v2 keeps **every v1 feature** and adds the new ones; v1-only features (paste roster, name-only check-in + approval, On hold, cancel match, edit past score, export CSV/JSON, end/continue, share link + QR toggles, live view) are built in Plan 3. Order: Step 1 rebrand → Plan 3 sessions with v1 parity → clubs/events → ratings/community. |
 
@@ -230,9 +230,12 @@ attribute on `<html>`: a first visit follows the device setting, and the
 | Brand dark | `#38471F` | `#243018` | Session bar, pressed states |
 | Accent (lime) | `#8FB339` | same | Positive actions, "Add" — **dark text only** (6.9:1; white fails at 2.4:1) |
 | Highlight (gold) | `#D4A017` | same | Team 2, "You're up next", level pills, medals (dark text 7.0:1) |
-| Danger | `#C0392B` | same | Delete, end session (white 5.4:1) |
+| Danger | `#C0392B` | same | Filled delete / end-session buttons (white 5.4:1) |
+| Danger text (`--color-danger-text`) | `#C0392B` | `#F08A7E` | Error text and borders (readable on dark surfaces; filled danger buttons keep `#C0392B`) |
+| Link (`--color-link`) | `#4A5C2F` | `#8FB339` | Text links (army green is 2.4:1 on dark) |
+| QR / logo bg (`--color-qr-bg`, `--color-logo-bg`) | `#FFFFFF` | `#FFFFFF` | QR code and logo badge backgrounds, both themes |
 | Page / card / card 2 | `#F5F6F0` / `#FFFFFF` / `#F0F2EA` | `#1A1C14` / `#252819` / `#2E3220` | Backgrounds |
-| Text / text 2 / muted | `#1C1F14` / `#3A3F2A` / `#6B7254` | `#EEF0E8` / `#CDD1BE` / `#8A9470` | Text (muted ≥ 4.6:1 both themes) |
+| Text / text 2 / muted | `#1C1F14` / `#3A3F2A` / `#636A4D` | `#EEF0E8` / `#CDD1BE` / `#9AA380` | Text (muted ≥ 4.6:1 both themes; v1's `#6B7254` / `#8A9470` measured 4.47:1 / 4.11:1 on secondary surfaces, just under AA) |
 | Line | `#D8DDD0` | `#3A3F2A` | Borders |
 | Pale tint | `#EEF2E6` | `#2A3318` | Present/playing rows, hovers |
 
@@ -244,6 +247,7 @@ attribute on `<html>`: a first visit follows the device setting, and the
 - **Shape:** 10 px radius, soft card shadows, sticky army header, pill buttons
   for small actions.
 - **Teams:** Team 1 = army green, Team 2 = gold.
+- **Toasts:** the default toast sits on army dark `#38471F`.
 
 **UI-friendly rules (all screens):** tap targets ≥ 44 px (inputs 48 px);
 text ≥ 15 px; visible focus rings; errors inline under the field (not only
@@ -293,7 +297,7 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 - **Pure, node-tested (`lib/`):** `queue-engine.js`, `team-balance.js`,
   `score-flow.js` (state transitions + validation), `session-stats.js`,
   `handle.js` (handle validation/normalization), `results.js`.
-- **Services (`lib/`):** `firebase.js` (init, emulator switch on localhost),
+- **Services (`lib/`):** `firebase.js` (init; live by default on localhost, emulators with `?emulators`, via pure `data-mode.js`),
   `auth.js`, `profiles.js`, `sessions.js` (watchers + intent writes),
   `host.js` (lease, heartbeat, runs `step`, writes batches).
 - **Features (`features/`):** `signin`, `setup`, `home`, `me`, `profile`,
@@ -310,7 +314,7 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
   attacks, player writing `live/state`, confirming own team's score, editing
   `results`, co-organizer removing owner, player adding a guest, writes to an
   ended session — all **denied**; normal flows **allowed**.
-- **Local dev** against Firebase emulators, never production.
+- **Local dev** uses the live project by default (rules tests and automated browser checks use the emulators via `?emulators`).
 - **Multi-device localhost check** with Playwright: separate contexts for 8
   players + host + TV; close the host and verify takeover.
 
@@ -320,6 +324,6 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 - Create a **new Firebase project** (Auth: Google provider; Firestore; Hosting);
   add the Hosting domain to Auth **authorized domains**.
 - `lib/firebase-config.js` stays gitignored; commit only the example.
-- Local development uses the Firebase emulators with the `demo-paddle-district` project, so no cloud project is needed until go-live.
+- Local development uses the live project by default (needs the gitignored `lib/firebase-config.js`); `?emulators` switches to the throwaway emulator sandbox (`demo-paddle-district`). Caveat: actions on localhost in live mode are real (e.g. @handles can never be deleted).
 
 Creating the repo and the Firebase project are outward-facing and done only with the user's explicit go-ahead.
