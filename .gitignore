@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+lib/firebase-config.js
+.superpowers/
+.claude/
+.playwright-mcp/
+.firebase/
+*-debug.log
