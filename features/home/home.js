@@ -6,11 +6,15 @@ export function init(container) {
   const { profile } = getSession();
   container.innerHTML = html`
     <section class="page home">
-      <h1 class="page__title">Hi, ${profile.displayName}</h1>
-      <div class="card home__soon">
-        <h2 class="home__soon-title">Sessions are coming next</h2>
-        <p class="page__sub">Soon you'll create open-play sessions, check in by QR, and queue for courts from here.</p>
+      <div class="home__hello">
+        <p class="eyebrow">Welcome back</p>
+        <h1 class="page__title">Hi, ${profile.displayName} 👋</h1>
       </div>
-      <a class="btn btn--secondary home__card-link" href="#/me">Show my player card</a>
+      <div class="card home__soon">
+        <span class="home__soon-icon" aria-hidden="true">🏓</span>
+        <h2 class="card__title">Open play sessions are coming next</h2>
+        <p class="page__sub">Soon you'll check in by QR, queue for courts from your phone, and see when you're up — right here.</p>
+      </div>
+      <a class="btn btn--primary btn--block" href="#/me">Show my player card</a>
     </section>`;
 }

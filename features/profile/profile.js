@@ -30,7 +30,7 @@ export function init(container, param) {
         ${avatarHtml(p, { large: true })}
         <h1 class="profile__name">${p.displayName}</h1>
         <p class="profile__handle">@${p.handle}</p>
-        <span class="pill pill--accent">${p.selfRating.toFixed(1)} · ${levelFor(p.selfRating)?.label ?? ''}</span>
+        <span class="pill pill--gold">${p.selfRating.toFixed(1)} · ${levelFor(p.selfRating)?.label ?? ''}</span>
         ${mine ? html`<a class="btn btn--secondary profile__edit" href="#/me">Edit my profile</a>` : ''}
       </div>`);
   }).catch((err) => show(html`

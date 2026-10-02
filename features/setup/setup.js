@@ -6,7 +6,7 @@ import { avatarHtml } from '../../lib/avatar.js';
 import { suggestHandle } from '../../lib/handle.js';
 import { NAME_MAX, DEFAULT_SELF_RATING, cleanName, validateProfileInput } from '../../lib/profile-input.js';
 import { createProfile, isHandleTaken } from '../../lib/profiles.js';
-import { ratingFieldHtml, wireRatingField, showErrors } from '../shared/rating-field.js';
+import { ratingFieldHtml, wireRatingField, showErrors, focusFirstError } from '../shared/rating-field.js';
 
 const CHECK_DELAY_MS = 400;
 
@@ -62,6 +62,8 @@ export function init(container) {
     }
   }
   handleInput.addEventListener('input', () => {
+    status.textContent = ''; // never leave an answer for an older value on screen
+    checkId++;
     clearTimeout(timer);
     timer = setTimeout(checkHandle, CHECK_DELAY_MS);
   });
@@ -73,7 +75,7 @@ export function init(container) {
     const data = Object.fromEntries(new FormData(form));
     const { ok, value, errors } = validateProfileInput(data);
     showErrors(form, errors);
-    if (!ok) return;
+    if (!ok) { focusFirstError(form); return; }
     submit.disabled = true;
     submit.textContent = 'Creating…';
     const slowTimer = setTimeout(() => { status.textContent = 'Waiting for a connection…'; }, 5000);
