@@ -116,7 +116,7 @@ test('a held winner who also stacked is not double-booked on another court', () 
 test('stacking + winners stay: earliest-first fills the court, not greedy first-fit', () => {
   // Winners a b hold c1. Queue: solo s, then pair p (ready).
   // Greedy first-fit takes s (1 slot), leaving 1 slot empty — pair won't fit, s blocks forever.
-  // Earliest-first skips s (not ready alone), takes pair p (2 slots). s stays in queue.
+  // Include-first DFS skips s; s alone can't fill the 2 open slots; pair p fills exactly. s stays in queue.
   const ps = players('a b c d e f');
   const entries = [entry('s', 'c', { at: 1, accepted: 'c' }), entry('p', 'd e', { at: 2 })];
   const out = run({ mode: 'stacking', rule: stay, participants: ps, entries, matches: [firstGame()], courtList: courts(1) });
