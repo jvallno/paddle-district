@@ -49,6 +49,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | 2026-10-03 | [Step 1 — Rebrand](superpowers/plans/2026-10-03-rebrand-v1-look.md) | v1 branding + UI-friendly rules on existing screens. |
 | 2026-10-03 | [Core game logic](superpowers/plans/2026-10-03-core-game-logic.md) | Spec 1 · Plan 1/3 — pure `lib/` rules: handles, score flow, session stats, team balance, queue engine, results log. |
 | 2026-10-03 | [Profiles & Firebase foundation](superpowers/plans/2026-10-03-profiles-firebase-foundation.md) | Spec 1 · Plan 2/3 — emulator-first Firebase, rules + emulator suite, sign-in, profiles, player card. |
+| 2026-10-03 | [Plan 3a — Organizer-run session](superpowers/plans/2026-10-03-plan-3a-organizer-session.md) | Spec 1 §13 — v1 replacement on one organizer device: sessions, auto-fill fairness queue, host lease, scores, rankings, export, TV view. **Ready to execute.** |
 
 ## Key decisions
 
