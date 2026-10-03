@@ -15,7 +15,8 @@ or code** — each row says *what it is* and *where the real detail lives*.
 |---|---|---|
 | Stack | Vanilla JS ES modules, **no build step**; CDN imports; node `--test` for pure logic. | `AGENTS.md` → Stack & ground rules |
 | Queue engine | `step()` in `lib/queue-engine.js` — pure; derives courts from `matches`, fills free courts per mode (fairness/stacking) and court rule; host commits its output. | `lib/queue-engine.js` header, spec §5 |
-| Game rules (pure) | `handle`, `profile-input`, `route-access`, `avatar`, `session`, `score-flow`, `session-stats`, `team-balance`, `results`, `theme-choice`, `data-mode`, `app-url` in `lib/`, each with `tests/*.test.js`. | the module headers |
+| Game rules (pure) | `handle`, `profile-input`, `route-access`, `avatar`, `session`, `score-flow`, `session-stats`, `team-balance`, `results`, `theme-choice`, `data-mode`, `app-url`, `roster-parse`, `session-model`, `time-format`, `session-export`, `sync-status`, `host-lease`, `host-step` in `lib/`, each with `tests/*.test.js`. | the module headers |
+| Host device | `lib/host.js` holds the per-tab lease on `sessions.host` (5 s beat, 20 s stale, released on leave) and commits `hostStep()` output (new matches + `live/state`). | `lib/host-lease.js`, `lib/host-step.js`, spec §13.4 |
 | Layout | `index.html` → `lib/app.js` (hash router); `features/<name>/` UI; `lib/` services + pure logic; `styles/` tokens. | `AGENTS.md` → Architecture |
 | Rendering | `html` tagged template auto-escapes every `${}`; guard test blocks bare arrays → `innerHTML` and direct `escapeHtml` imports. | `lib/html.js`, `tests/html-usage.test.js` |
 | Auth & routing | `lib/app.js` watches auth + profile → `lib/session.js`; `resolveRoute()` decides signin/setup/ready screens; signed-out deep links resume after sign-in. | `lib/route-access.js`, `lib/session.js` |
@@ -34,7 +35,10 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | `setup` | First-time profile: name, unique @handle (live availability), self-rating. | `features/setup/`, `lib/profiles.js` |
 | `me` | Player card with QR (→ `#/u/{handle}`), edit name/level, sign out. | `features/me/`, `lib/qr.js` |
 | `profile` | Public profile `#/u/{handle}`. | `features/profile/` |
-| `home` | Placeholder until Plan 3's My Sessions. | `features/home/` |
+| `home` | My Sessions: live → upcoming → past, create, delete (owner). | Spec §13.1 · Plan 3a |
+| `new-session` | Create session: name, date, venue, courts, court rule (fairness in 3a). | Spec §13.1 · Plan 3a |
+| `session` | Organizer view `#/s/{sid}`: courts (score/swap/cancel/pause), players (paste roster, Here/On hold/Left, queue), scores (edit), rankings, settings (rule, share/QR, export, end/continue); runs the host. | Spec §13 · Plan 3a |
+| `tv` | Public live view `#/tv/{sid}`: courts, Up next, rankings, QR; no sign-in. | Spec §13.1 · Plan 3a |
 
 ## Specs (`docs/superpowers/specs/`)
 
@@ -49,7 +53,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | 2026-10-03 | [Step 1 — Rebrand](superpowers/plans/2026-10-03-rebrand-v1-look.md) | v1 branding + UI-friendly rules on existing screens. |
 | 2026-10-03 | [Core game logic](superpowers/plans/2026-10-03-core-game-logic.md) | Spec 1 · Plan 1/3 — pure `lib/` rules: handles, score flow, session stats, team balance, queue engine, results log. |
 | 2026-10-03 | [Profiles & Firebase foundation](superpowers/plans/2026-10-03-profiles-firebase-foundation.md) | Spec 1 · Plan 2/3 — emulator-first Firebase, rules + emulator suite, sign-in, profiles, player card. |
-| 2026-10-03 | [Plan 3a — Organizer-run session](superpowers/plans/2026-10-03-plan-3a-organizer-session.md) | Spec 1 §13 — v1 replacement on one organizer device: sessions, auto-fill fairness queue, host lease, scores, rankings, export, TV view. **Ready to execute.** |
+| 2026-10-03 | [Plan 3a — Organizer-run session](superpowers/plans/2026-10-03-plan-3a-organizer-session.md) | Spec 1 §13 — v1 replacement on one organizer device: sessions, auto-fill fairness queue, host lease, scores, rankings, export, TV view. ✅ Done 2026-10-03 (branch feat/plan3a-sessions). |
 
 ## Key decisions
 
@@ -68,3 +72,4 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | 2026-10-03 | Localhost uses LIVE data by default (like inventory-tracking-system); `?emulators` = sandbox; corner badge shows which. | User wants real data locally; sandbox kept for safe experiments and automated checks. |
 | 2026-10-03 | Plan 3 split into **3a** organizer-run session (v1 replacement, auto-fill courts, fairness only, guests only, simple host lease) → **3b** players self-serve → **3c** stacking + co-organizers + forced takeover. | Each step is reviewable and v1 can be replaced after 3a. Spec 1 §13. |
 | 2026-10-03 | @handle fixed after creation; Google photo, no upload; badges denied by rules until "Pro". | Keep v1 simple; uniqueness stays trivially correct. |
+| 2026-10-03 | Match ids `${courtId}_${n}`; host steps on snapshots only (no 1 s tick); lease per tab, released on leave; 3a participants are guests only. | Deterministic, bounded ids; nothing time-based in fairness; fast handover; 3b adds real players. |

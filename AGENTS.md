@@ -72,12 +72,12 @@ docs/superpowers/   # specs/ (design) and plans/ (implementation) per feature
 
 ### `lib/` — two kinds of module
 
-- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`, `profile-input`, `route-access`, `avatar`, `session`, `theme-choice` (light/dark choice), `data-mode` (live vs emulators), `app-url` (links that keep the sandbox flag).
+- **Pure logic** (no DOM, no Firebase): `escape`, `html`, `router.parseHash`, `handle`, `score-flow`, `session-stats`, `team-balance`, `queue-engine`, `results`, `profile-input`, `route-access`, `avatar`, `session`, `theme-choice` (light/dark choice), `data-mode` (live vs emulators), `app-url` (links that keep the sandbox flag), `roster-parse`, `session-model`, `time-format`, `session-export`, `sync-status`, `host-lease`, `host-step`.
   **These have `tests/*.test.js` and must stay import-free of DOM/Firebase** so
   they run under `node --test`. Put all game/queue/ranking rules here and test
   them — that's where the bugs hide.
 - **Browser / services** (touch the DOM or a backend): `app` (auth → session → guarded routes),
-  `router.createRouter`, `firebase`, `auth`, `profiles`, `qr`, `toast`, `confirm`, `theme`.
+  `router.createRouter`, `firebase`, `auth`, `profiles`, `qr`, `toast`, `confirm`, `theme`, `sessions`, `host`, `dialog`.
 
 ### `features/<name>/` — the UI convention
 

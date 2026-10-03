@@ -346,7 +346,7 @@ localhost check and an optional deploy:
 | `#/home` | **My Sessions** (sessions I organize): live → upcoming → past; **Create session**; delete (owner, confirm). |
 | `#/new` | Name, date, venue, number of courts, court rule (everyone off / winners stay max N / winners split). Mode is fixed to **fairness** in 3a (stacking arrives in 3c). |
 | `#/s/{sid}` | Organizer view, tabs: **Courts** (live courts + timers; enter score; swap a player; cancel match; add/rename/pause court) · **Players** (paste roster / add a name; Here / On hold / Left; queue order with "Up next") · **Scores** (game history; edit a past score) · **Rankings** (Wins / Points / Win% / Pt%, tiebreak score diff) · **Settings** (court rule, share link, show/hide QR, end/continue, export CSV/JSON, host status). |
-| `#/tv/{sid}` | Public, no sign-in, dark: courts + timers, Up next, rankings, big session QR (when `shareQr`). Replaces v1's live view / share link. |
+| `#/tv/{sid}` | Public, no sign-in, dark: courts + timers, Up next, rankings, big session QR (when `shareQr`). Replaces v1's live view / share link. Always dark; topbar hidden. |
 
 ### 13.2 Plan 3a — behaviour
 
@@ -377,7 +377,7 @@ localhost check and an optional deploy:
 - `sessions/{sid}` adds `startedAt`, `endedAt` (null while live), `shareQr` (bool).
   3a always writes `mode: 'fairness'`, `organizerIds: [ownerId]`, `guestsAllowed: true`.
 - `matches/{mid}` adds terminal status `cancelled` (with `endedAt`, no `score`).
-- Match ids are deterministic: `${courtId}_${prevMid ?? 'first'}` (carried forward from Plan 1).
+- Match ids are deterministic: `${courtId}_${n}`, n = the sequence on that court (`nextMatchId`), so two devices agree and ids stay short.
 
 ### 13.4 Plan 3a — host
 
@@ -385,16 +385,16 @@ Any organizer device with the session open runs the §5.6 lease: renew
 `beatAt` every 5 s; claim by transaction when `host` is empty or `beatAt` is
 older than 20 s; stop (and stop writing) when the lease is lost. This prevents
 two hosts when the same owner has the session open on phone and laptop. The
-host runs `step()` on every relevant snapshot and on a 1 s tick and commits new
+host runs `step()` on every relevant snapshot (no tick — nothing in fairness/court rules is time-based) and commits new
 matches + `live/state` in one fire-and-forget `writeBatch`. No host →
-"Queue paused — no host" with **Become host**. Forced takeover comes in 3c.
+"Queue paused — no host" with **Become host**. Forced takeover comes in 3c. The lease is per browser tab and is released when the organizer leaves the session view; ending a session clears it.
 
 ### 13.5 Plan 3a — rules delta (vs §8)
 
 | Data | 3a rule |
 |---|---|
 | `sessions/{sid}` | `get`: public. `list`: only sessions whose `organizerIds` contains the caller (no enumerating other people's sessions). Create: signed in, `ownerId == auth.uid`, `organizerIds == [auth.uid]`. Update: organizers; `ownerId`/`organizerIds` owner-only. Delete: owner. |
-| `…/participants/{pid}` | Read: signed in. Write: organizers only (player self-writes arrive in 3b). |
+| `…/participants/{pid}` | Read: signed in. Write: organizers only (player self-writes arrive in 3b). Guests only in 3a (`isGuest == true`, `uid == null`, `g_…` ids). |
 | `…/matches/{mid}` | Read: public. Create/update/delete: organizers (status must be a known value). |
 | `…/live/state` | Read: public. Write: organizers. |
 | Delete session | Client deletes subcollection docs first (while the session doc exists so the organizer check passes), then the session doc. |
