@@ -18,3 +18,7 @@ test('parseHash extracts route name', () => {
 test('parseHash extracts a single param', () => {
   assert.deepEqual(parseHash('#/session/abc123'), { name: 'session', param: 'abc123' });
 });
+
+test('parseHash reads a route with an id', () => {
+  assert.deepEqual(parseHash('#/tv/abc123'), { name: 'tv', param: 'abc123' });
+});

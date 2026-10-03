@@ -1,0 +1,29 @@
+/* Public live view / TV (#/tv/{sid}) — always dark, big type */
+body.tv-mode #topbar, body.tv-mode .env-badge { display: none; }
+.tv { min-height: 100vh; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+.tv__loading, .tv__sub { color: var(--color-muted); }
+.tv__head { display: flex; align-items: center; gap: var(--space-3); }
+.tv__logo { width: 56px; height: 56px; border-radius: 16px; background: var(--color-logo-bg); padding: 4px; }
+.tv__heading { flex: 1; min-width: 0; }
+.tv__title { font-size: clamp(1.4rem, 3vw, 2.4rem); }
+.tv__clock { font-size: clamp(1.4rem, 3vw, 2.4rem); font-weight: 800; }
+.tv__grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-4); align-items: start; }
+.tv__courts { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-3); }
+.tv-court { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-3); display: flex; flex-direction: column; gap: 6px; }
+.tv-court--playing { border-top: 6px solid var(--color-accent); }
+.tv-court__head { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; font-weight: 800; }
+.tv-court__head h2 { font-size: 1.3rem; }
+.tv-court__team { font-size: clamp(1.1rem, 2vw, 1.6rem); font-weight: 800; padding: 8px 12px; border-radius: var(--radius); }
+.tv-court__team--1 { background: var(--color-primary); color: var(--color-on-dark); }
+.tv-court__team--2 { background: var(--color-highlight); color: var(--color-highlight-ink); }
+.tv-court__vs { text-align: center; font-weight: 800; color: var(--color-muted); font-size: 0.8rem; text-transform: uppercase; }
+.tv-court__empty { color: var(--color-muted); font-size: 1.2rem; font-weight: 700; padding: var(--space-3) 0; }
+.tv__side { display: flex; flex-direction: column; gap: var(--space-3); }
+.tv-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-3); }
+.tv-card h2 { font-size: 1.1rem; margin-bottom: var(--space-2); }
+.tv-next { margin: 0; padding-left: 1.5em; font-size: 1.15rem; font-weight: 700; }
+.tv-next--soon::marker { color: var(--color-highlight); }
+.tv-card--qr { text-align: center; }
+.tv__qr { width: 220px; max-width: 100%; margin: 0 auto; background: var(--color-qr-bg); padding: 10px; border-radius: var(--radius); }
+.tv__qr svg { display: block; width: 100%; height: auto; }
+@media (max-width: 800px) { .tv { padding: var(--space-3); } .tv__grid { grid-template-columns: 1fr; } }
