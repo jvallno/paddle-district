@@ -87,3 +87,16 @@ test('a live match whose player record is missing renders "?" instead of crashin
   const out = run({ participants: players('a b c'), matches: [live('c1', ['a', 'b'], ['c', 'zz'])] });
   assert.equal(out.state.names.zz, '?');
 });
+
+test('cancelled match: no stayers, players go to the back, court refills', () => {
+  const cancelled = { mid: 'm1', courtId: 'c1', team1: ['a', 'b'], team2: ['c', 'd'], status: 'cancelled', startedAt: 10, endedAt: 20, score: null };
+  const out = run({ rule: { type: 'winnersStay', maxWins: 2 }, participants: players('a b c d e f g h'), matches: [cancelled] });
+  assert.deepEqual(teams(out).flat().sort(), ['e', 'f', 'g', 'h']);
+  assert.deepEqual(out.state.queue.map((q) => q.pids[0]).sort(), ['a', 'b', 'c', 'd']);
+});
+
+test('guests without a self-rating still get balanced teams', () => {
+  const out = run({ participants: players('a b c d', { a: { selfRating: null }, b: { selfRating: undefined }, c: { selfRating: null }, d: { selfRating: null } }) });
+  assert.equal(out.newMatches.length, 1);
+  assert.equal(teams(out).flat().length, 4);
+});
