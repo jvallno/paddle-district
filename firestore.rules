@@ -99,7 +99,9 @@ service cloud.firestore {
         && (request.auth.uid == resource.data.ownerId
             || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'organizerIds']))
         && request.resource.data.ownerId == resource.data.ownerId
-        && request.resource.data.ownerId in request.resource.data.organizerIds;
+        && request.resource.data.ownerId in request.resource.data.organizerIds
+        // 3a: organizerIds is fixed (co-organizers arrive in 3c).
+        && request.resource.data.organizerIds == resource.data.organizerIds;
       allow delete: if signedIn() && request.auth.uid == resource.data.ownerId;
 
       // Players in this session. 3a: organizers add name-only guests; player
@@ -116,22 +118,28 @@ service cloud.firestore {
         allow delete: if isOrganizer(sid);
       }
 
-      // Games. The host creates them; organizers score, swap or cancel. A game
-      // never goes back to 'playing' once it has ended (stops a stale host from
-      // overwriting a scored game with a fresh one).
+      // Games. The host creates them (only while the session is live); organizers
+      // score, swap or cancel — also after the session ended, so games left on
+      // court can be finished. A game never goes back to 'playing' once it has
+      // ended (stops a stale host from overwriting a scored game with a fresh one).
       match /matches/{mid} {
         allow read: if true;
         allow create: if isOrganizer(sid) && validMatch(request.resource.data)
-          && request.resource.data.status == 'playing';
+          && request.resource.data.status == 'playing'
+          && sessionDoc(sid).status == 'live';
         allow update: if isOrganizer(sid) && validMatch(request.resource.data)
           && !(resource.data.status != 'playing' && request.resource.data.status == 'playing');
         allow delete: if isOrganizer(sid);
       }
 
-      // The host-computed view everyone watches (TV, organizer screens).
-      match /live/{doc} {
+      // The host-computed view everyone watches (TV, organizer screens). Only
+      // live/state exists; it is written only while the session is live.
+      match /live/state {
         allow read: if true;
-        allow write: if isOrganizer(sid);
+        allow create, update: if isOrganizer(sid)
+          && sessionDoc(sid).status == 'live'
+          && request.resource.data.keys().hasOnly(['mode', 'courts', 'queue', 'names', 'updatedAt', 'hostDeviceId', 'version']);
+        allow delete: if isOrganizer(sid);
       }
     }
 
