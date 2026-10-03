@@ -327,3 +327,107 @@ Follows AGENTS.md (vanilla ES modules, no build, `html` tag, `view:teardown`).
 - Local development uses the live project by default (needs the gitignored `lib/firebase-config.js`); `?emulators` switches to the throwaway emulator sandbox (`demo-paddle-district`). Caveat: actions on localhost in live mode are real (e.g. @handles can never be deleted).
 
 Creating the repo and the Firebase project are outward-facing and done only with the user's explicit go-ahead.
+
+## 13. Plan 3 delivery — split into 3a / 3b / 3c (decided 2026-10-03)
+
+Plan 3 (live sessions + v1 parity) ships in three plans, each ending with a
+localhost check and an optional deploy:
+
+| Plan | Scope |
+|---|---|
+| **3a — Organizer-run session (v1 replacement)** | One organizer device runs everything: My Sessions, create/delete session, paste roster / add names, courts (add/rename/pause), fairness queue with auto-fill, On hold, swap, cancel match, organizer-entered scores + edit past score, rankings + history, end/continue, export CSV/JSON, share link + QR show/hide, public `#/tv/{sid}` (= v1's live view), simple host lease. |
+| **3b — Players self-serve** | Session-QR check-in (signed in, or name-only with organizer approval list), "Sign in to save your stats" nudge + link a name to a profile, player status view, player submit / opponent confirm scores, `results` log writes. |
+| **3c — Advanced queue & multi-organizer** | Stacking mode (solo/group entries), co-organizers, forced host takeover ("Make this device the host"). |
+
+### 13.1 Plan 3a — screens
+
+| Route | 3a behaviour |
+|---|---|
+| `#/home` | **My Sessions** (sessions I organize): live → upcoming → past; **Create session**; delete (owner, confirm). |
+| `#/new` | Name, date, venue, number of courts, court rule (everyone off / winners stay max N / winners split). Mode is fixed to **fairness** in 3a (stacking arrives in 3c). |
+| `#/s/{sid}` | Organizer view, tabs: **Courts** (live courts + timers; enter score; swap a player; cancel match; add/rename/pause court) · **Players** (paste roster / add a name; Here / On hold / Left; queue order with "Up next") · **Scores** (game history; edit a past score) · **Rankings** (Wins / Points / Win% / Pt%, tiebreak score diff) · **Settings** (court rule, share link, show/hide QR, end/continue, export CSV/JSON, host status). |
+| `#/tv/{sid}` | Public, no sign-in, dark: courts + timers, Up next, rankings, big session QR (when `shareQr`). Replaces v1's live view / share link. |
+
+### 13.2 Plan 3a — behaviour
+
+- **Auto-fill:** when a court frees (score entered, match cancelled, court
+  unpaused) the host's `step()` immediately starts the next match on it. The
+  organizer corrects with swap / On hold / cancel.
+- **Players are name-only guests** (`g_<random>`, `uid: null`, `isGuest: true`,
+  `selfRating: null`) from a pasted roster or "add a name". The paste dialog has
+  "Mark everyone here" (default on; off → arrive On hold). Team balancing must
+  handle missing ratings.
+- **On hold** = participant `status: 'break'` (engine skips them). **Left** = `status: 'left'`.
+- **Cancel match** (v1 parity): sets match `status: 'cancelled'` and `endedAt`;
+  no score is recorded. The organizer picks the players' fate as in v1:
+  *back to the queue* (they go to the **back** of the line — fairness orders by
+  last `endedAt`) or *put them On hold*. Cancelled matches never count in stats
+  and never create court-rule stayers.
+- **Scores:** organizer-entered via `overrideScore` (status `overridden`).
+  **Edit past score** = another override on the same match doc.
+- **No `results` writes in 3a** — every player is a guest, and guests are never
+  in `results`. Results logging starts in 3b with linked profiles.
+- **End session:** `status: 'ended'`, `endedAt` set; the host stops and the
+  view is read-only except score fixes and **Continue** (clears `endedAt`, back to `live`).
+- **Export:** CSV and JSON in v1's columns, generated client-side.
+- **Session timer:** elapsed since `startedAt` (v1 parity).
+
+### 13.3 Plan 3a — data delta (vs §4.2)
+
+- `sessions/{sid}` adds `startedAt`, `endedAt` (null while live), `shareQr` (bool).
+  3a always writes `mode: 'fairness'`, `organizerIds: [ownerId]`, `guestsAllowed: true`.
+- `matches/{mid}` adds terminal status `cancelled` (with `endedAt`, no `score`).
+- Match ids are deterministic: `${courtId}_${prevMid ?? 'first'}` (carried forward from Plan 1).
+
+### 13.4 Plan 3a — host
+
+Any organizer device with the session open runs the §5.6 lease: renew
+`beatAt` every 5 s; claim by transaction when `host` is empty or `beatAt` is
+older than 20 s; stop (and stop writing) when the lease is lost. This prevents
+two hosts when the same owner has the session open on phone and laptop. The
+host runs `step()` on every relevant snapshot and on a 1 s tick and commits new
+matches + `live/state` in one fire-and-forget `writeBatch`. No host →
+"Queue paused — no host" with **Become host**. Forced takeover comes in 3c.
+
+### 13.5 Plan 3a — rules delta (vs §8)
+
+| Data | 3a rule |
+|---|---|
+| `sessions/{sid}` | `get`: public. `list`: only sessions whose `organizerIds` contains the caller (no enumerating other people's sessions). Create: signed in, `ownerId == auth.uid`, `organizerIds == [auth.uid]`. Update: organizers; `ownerId`/`organizerIds` owner-only. Delete: owner. |
+| `…/participants/{pid}` | Read: signed in. Write: organizers only (player self-writes arrive in 3b). |
+| `…/matches/{mid}` | Read: public. Create/update/delete: organizers (status must be a known value). |
+| `…/live/state` | Read: public. Write: organizers. |
+| Delete session | Client deletes subcollection docs first (while the session doc exists so the organizer check passes), then the session doc. |
+
+### 13.6 Plan 3a — modules
+
+- **Pure, node-tested:** `roster-parse.js` (v1's paste parser and skip
+  patterns), `session-export.js` (CSV/JSON), `host-lease.js` (claim/renew
+  decision).
+- **Services:** `sessions.js` (watchers + writes), `host.js` (lease, tick,
+  run `step()`, commit).
+- **Features:** `home` (My Sessions), `new-session`, `session` (organizer
+  view), `tv`.
+
+### 13.7 Plan 3a — errors & carried-forward items
+
+- Floor actions are fire-and-forget batches stamped `clientAt`; a sync dot
+  shows saved / syncing / offline. Engine exceptions → toast, last good
+  `live/state` kept. Scores 0–99; 0–0 and win-by-1 warn; tie = no winner.
+  Every empty state offers a next step.
+- Carried forward and done in 3a: skip router restart on public routes; view
+  teardown before replacing a view; hide `#boot` on public routes; `appUrl()`
+  for share/QR links; `document.title` + focus on route change; deterministic
+  match ids.
+
+### 13.8 Plan 3a — testing
+
+- `npm test`: roster parser, export, host-lease decisions, cancelled matches
+  (back of line, no stats, no stayers), team balance with missing ratings.
+- `npm run test:rules`: listing others' sessions, non-organizer writes to
+  participants/matches/state, non-owner changing `organizerIds`, deleting
+  another's session — all **denied**; owner flows and public TV reads **allowed**.
+- Playwright on `?emulators`: create session → paste 10 names → 2 courts
+  auto-fill → scores → cancel / swap / On hold / edit past score → rankings →
+  export → end / continue; second context as TV; close host tab and reopen →
+  host resumes. Then the user's localhost check.

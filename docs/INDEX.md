@@ -40,7 +40,7 @@ or code** — each row says *what it is* and *where the real detail lives*.
 
 | Date | Spec | Summary |
 |---|---|---|
-| 2026-10-03 | [Profiles & live queue](superpowers/specs/2026-10-03-profiles-and-live-queue-design.md) | Spec 1 (sub-projects #1 + #3): Google-verified profiles, per-session organizers, one queue engine (fairness / stacking + court rules), submit→confirm scores, host-device lease, public TV view, append-only results log. **Draft — awaiting review.** |
+| 2026-10-03 | [Profiles & live queue](superpowers/specs/2026-10-03-profiles-and-live-queue-design.md) | Spec 1 (sub-projects #1 + #3): Google-verified profiles, per-session organizers, one queue engine (fairness / stacking + court rules), submit→confirm scores, host-device lease, public TV view, append-only results log. **Draft — awaiting review.** §13 = Plan 3 split (3a organizer-run session / 3b self-serve / 3c stacking + multi-organizer) and the 3a design. |
 
 ## Plans (`docs/superpowers/plans/`)
 
@@ -65,4 +65,5 @@ or code** — each row says *what it is* and *where the real detail lives*.
 | 2026-10-03 | Accounts optional with nudging: v1's name-only roster + self check-in stay; signed-in players get profiles; organizers can link a name to a profile. Google is the only sign-in. | Keep v1's zero-friction check-in while moving players onto profiles. |
 | 2026-10-03 | v2 = every v1 feature + new ones. Order: Step 1 rebrand → Plan 3 sessions (with v1 parity) → clubs/events → ratings/community, step by step with a localhost check and deploy on request. | Smooth, incremental rollout. |
 | 2026-10-03 | Localhost uses LIVE data by default (like inventory-tracking-system); `?emulators` = sandbox; corner badge shows which. | User wants real data locally; sandbox kept for safe experiments and automated checks. |
+| 2026-10-03 | Plan 3 split into **3a** organizer-run session (v1 replacement, auto-fill courts, fairness only, guests only, simple host lease) → **3b** players self-serve → **3c** stacking + co-organizers + forced takeover. | Each step is reviewable and v1 can be replaced after 3a. Spec 1 §13. |
 | 2026-10-03 | @handle fixed after creation; Google photo, no upload; badges denied by rules until "Pro". | Keep v1 simple; uniqueness stays trivially correct. |
