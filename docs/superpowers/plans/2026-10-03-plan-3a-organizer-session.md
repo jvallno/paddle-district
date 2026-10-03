@@ -1,5 +1,7 @@
 # Plan 3a — Organizer-Run Session Implementation Plan (Spec 1 · Plan 3a of 3a/3b/3c)
 
+> **Executed 2026-10-03** on `feat/plan3a-sessions` (subagent-driven, per-task + final reviews). The review rounds changed `lib/host.js` (guarded renew/release transactions, retry backoff), inline validation errors, and the final fix wave (rules: organizerIds fixed in 3a, games/live writes only while live, `live/state` keys only; finish games after End; delete flow; TV fixes). **The code in the repo is authoritative** — the code blocks below are the pre-review version.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** One organizer device runs a whole open-play session (v1 replacement): My Sessions, create/delete, paste roster, courts that fill themselves (fairness queue + court rules), On hold, swap, cancel match, organizer scores + edit past score, rankings, history, end/continue, CSV/JSON export, share link + QR, and a public `#/tv/{sid}` live view.
@@ -3077,3 +3079,6 @@ Leave `npm run emulators` and `npm run serve` running and tell the user: sandbox
 - Swapping a player after a game was scored doesn't log a correction (Plan 1 note) — matters once `results` exist (3b).
 - A clock-skewed device (> 20 s ahead) can see a live lease as stale and take it over; handover is clean (transaction + `mine` check), so this is a takeover, never two hosts. Revisit with server timestamps if it shows up.
 - Firestore backups (needs the Blaze plan) once real session data exists.
+- **Follow-up before deploy (recommended):** on "Session not found", `features/session/session.js` stops the watchers too, so an organizer opening an uncached session offline stays on "Session not found" until reload. Stop only the host and keep the watchers.
+- Deferred from reviews (can wait): sync dot shows "saved" after a rejected write (toast reports it); `Date.parse` accepts rollover dates; roster skip patterns drop "Ana (2)"; stateKey ignores host version; dialog drag-to-backdrop closes it, no focus trap; `pagehide` release may not flush (20 s lapse fallback); unchunked >500-write batches; dialogs act on the match snapshot from when they opened (matters with co-organizers, 3c); Courts tab shows stale Up next after End; `deleteSession` can hang if the connection drops mid-way (retry converges); clock after Continue includes the ended gap; 320 px tab strip scrolls; unbounded organizer-written fields (courts items, names maps); lease beat ≈ 1 write + 1 read / 5 s per open organizer tab — watch Spark quota after deploy.
+
