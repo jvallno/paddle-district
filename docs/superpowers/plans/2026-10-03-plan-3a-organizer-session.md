@@ -22,7 +22,7 @@
 - Colors, spacing, radii only from `styles/tokens.css` variables (v1 brand, spec §7). Team 1 = army green, Team 2 = gold.
 - UI rules (spec §7): tap targets ≥ 44 px, inputs 48 px, body ≥ 15 px, errors inline, busy buttons say what they're doing, every empty state offers a next step, works from 320 px.
 - Rules match users by Auth **uid** only; signed in = Google (`sign_in_provider == 'google.com'`).
-- Floor actions are **fire-and-forget** writes stamped `clientAt`, tracked by the sync dot. The only transaction is the host-lease claim (spec §5.6). Deleting a session is awaited (needs a connection).
+- Floor actions are **fire-and-forget** writes stamped `clientAt`, tracked by the sync dot. Transactions only for the host lease (claim/renew/release) (spec §5.6). Deleting a session is awaited (needs a connection).
 - Pure modules (`lib/roster-parse.js`, `session-model.js`, `time-format.js`, `session-export.js`, `sync-status.js`, `host-lease.js`, `host-step.js`) import **no** DOM/Firebase.
 - Automated browser checks use `?emulators` only — never live data.
 - Commits: one per task, message ending with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. **No push, no deploy, no PR** — those need the user's explicit request.

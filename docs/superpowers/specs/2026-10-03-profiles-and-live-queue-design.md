@@ -369,6 +369,7 @@ localhost check and an optional deploy:
   in `results`. Results logging starts in 3b with linked profiles.
 - **End session:** `status: 'ended'`, `endedAt` set; the host stops and the
   view is read-only except score fixes and **Continue** (clears `endedAt`, back to `live`).
+  Games still on court when the session ends can still be scored or cancelled.
 - **Export:** CSV and JSON in v1's columns, generated client-side.
 - **Session timer:** elapsed since `startedAt` (v1 parity).
 
@@ -382,30 +383,36 @@ localhost check and an optional deploy:
 ### 13.4 Plan 3a — host
 
 Any organizer device with the session open runs the §5.6 lease: renew
-`beatAt` every 5 s; claim by transaction when `host` is empty or `beatAt` is
-older than 20 s; stop (and stop writing) when the lease is lost. This prevents
-two hosts when the same owner has the session open on phone and laptop. The
-host runs `step()` on every relevant snapshot (no tick — nothing in fairness/court rules is time-based) and commits new
-matches + `live/state` in one fire-and-forget `writeBatch`. No host →
-"Queue paused — no host" with **Become host**. Forced takeover comes in 3c. The lease is per browser tab and is released when the organizer leaves the session view; ending a session clears it.
+`beatAt` every 5 s; claim when `host` is empty or `beatAt` is older than 20 s;
+stop (and stop writing) when the lease is lost. Claim, renew and release are
+all small guarded transactions (they write only if `host.deviceId` is still
+this device, or the lease is free/stale for a claim). This prevents two hosts
+when the same owner has the session open on phone and laptop. The host runs
+`step()` on every relevant snapshot (no tick — nothing in fairness/court rules
+is time-based) and commits new matches + `live/state` in one fire-and-forget
+`writeBatch`; a failed host batch is retried with backoff (up to 60 s). Every
+organizer tab auto-claims a free lease — there is no "Become host" button; the
+banner shows "Starting the queue…", "This device is running the queue", or
+"Queue run by your other device". Forced takeover comes in 3c. The lease is per browser tab and is released when the organizer leaves the session view; ending a session clears it.
 
 ### 13.5 Plan 3a — rules delta (vs §8)
 
 | Data | 3a rule |
 |---|---|
-| `sessions/{sid}` | `get`: public. `list`: only sessions whose `organizerIds` contains the caller (no enumerating other people's sessions). Create: signed in, `ownerId == auth.uid`, `organizerIds == [auth.uid]`. Update: organizers; `ownerId`/`organizerIds` owner-only. Delete: owner. |
+| `sessions/{sid}` | `get`: public. `list`: only sessions whose `organizerIds` contains the caller (no enumerating other people's sessions). Create: signed in, `ownerId == auth.uid`, `organizerIds == [auth.uid]`. Update: organizers; `ownerId` fixed; `organizerIds` fixed in 3a (co-organizers in 3c). Delete: owner. |
 | `…/participants/{pid}` | Read: signed in. Write: organizers only (player self-writes arrive in 3b). Guests only in 3a (`isGuest == true`, `uid == null`, `g_…` ids). |
-| `…/matches/{mid}` | Read: public. Create/update/delete: organizers (status must be a known value). |
-| `…/live/state` | Read: public. Write: organizers. |
-| Delete session | Client deletes subcollection docs first (while the session doc exists so the organizer check passes), then the session doc. |
+| `…/matches/{mid}` | Read: public. Create: organizers, only while the session is live. Update (scores, swaps, cancels): organizers, also after the session ended. Delete: organizers, any time (status must be a known value). |
+| `…/live/state` | Read: public. Only `live/state` exists (no other ids). Write: organizers, only while the session is live, with only the host's keys (`mode`, `courts`, `queue`, `names`, `updatedAt`, `hostDeviceId`, `version`). Delete: organizers, any time. |
+| Delete session | Client ends the session first (stops the host; no new games or live writes), then deletes subcollection docs (while the session doc exists so the organizer check passes), then the session doc. |
 
 ### 13.6 Plan 3a — modules
 
 - **Pure, node-tested:** `roster-parse.js` (v1's paste parser and skip
-  patterns), `session-export.js` (CSV/JSON), `host-lease.js` (claim/renew
-  decision).
-- **Services:** `sessions.js` (watchers + writes), `host.js` (lease, tick,
-  run `step()`, commit).
+  patterns), `session-model.js` (session/match shapes and floor patches),
+  `time-format.js`, `session-export.js` (CSV/JSON), `sync-status.js`,
+  `host-lease.js` (claim/renew decision), `host-step.js` (what the host writes).
+- **Services:** `sessions.js` (watchers + writes), `host.js` (lease, run
+  `step()`, commit — no tick).
 - **Features:** `home` (My Sessions), `new-session`, `session` (organizer
   view), `tv`.
 
