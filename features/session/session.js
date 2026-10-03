@@ -127,7 +127,11 @@ export function init(container, sid) {
   function onData(patch) {
     Object.assign(ctx, patch);
     if (ctx.session === null) {
-      stopAll(); // deleted: stop the host and watchers so nothing writes or toasts
+      // Deleted (or not cached yet while offline): stop the host so nothing
+      // writes or toasts, but keep watching — if the session shows up after
+      // all, the `!tabs` path below redraws the view and restarts the host.
+      host?.stop();
+      host = null;
       tabs = null;
       root.innerHTML = notFoundHtml();
       return;
