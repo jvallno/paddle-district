@@ -28,3 +28,9 @@ test('ready: auth screens bounce to home (or the remembered route)', () => {
 test('unknown status: render nothing rather than fail open', () => {
   assert.deepEqual(resolveRoute('weird', 'home'), { wait: true });
 });
+
+test('the TV view is public in every auth state, even while loading', () => {
+  for (const status of ['loading', 'signedOut', 'needsProfile', 'ready']) {
+    assert.deepEqual(resolveRoute(status, 'tv'), { show: 'tv' }, status);
+  }
+});

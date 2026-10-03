@@ -57,5 +57,102 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.handle == handle;
       allow update, delete: if false;
     }
+
+    // ── Sessions (spec §4.2, §13.5) ──────────────────────────────────────────
+    function sessionDoc(sid) { return get(/databases/$(database)/documents/sessions/$(sid)).data; }
+    function isOrganizer(sid) { return signedIn() && request.auth.uid in sessionDoc(sid).organizerIds; }
+    function isNum(v) { return v is int || v is float; }
+    function optNum(v) { return v == null || isNum(v); }
+
+    function validSession(d) {
+      return d.keys().hasOnly(['name', 'date', 'venue', 'ownerId', 'organizerIds', 'courts', 'mode', 'courtRule',
+          'guestsAllowed', 'status', 'host', 'shareQr', 'startedAt', 'endedAt', 'createdAt'])
+        && d.keys().hasAll(['name', 'date', 'venue', 'ownerId', 'organizerIds', 'courts', 'mode', 'courtRule',
+          'guestsAllowed', 'status', 'host', 'shareQr', 'startedAt', 'endedAt', 'createdAt'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 60
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.venue is string && d.venue.size() <= 80
+        && d.organizerIds is list && d.organizerIds.size() >= 1 && d.organizerIds.size() <= 10
+        && d.courts is list && d.courts.size() >= 1 && d.courts.size() <= 12
+        && d.mode in ['fairness', 'stacking']
+        && d.courtRule is map && d.courtRule.type in ['everyoneOff', 'winnersStay', 'winnersSplit']
+        && d.guestsAllowed is bool && d.shareQr is bool
+        && d.status in ['live', 'ended']
+        && (d.host == null || d.host is map)
+        && isNum(d.startedAt) && optNum(d.endedAt);
+    }
+
+    match /sessions/{sid} {
+      // Anyone may open a session by id (the public TV view); only your own
+      // sessions can be listed, so nobody can enumerate other people's.
+      allow get: if true;
+      allow list: if signedIn() && request.auth.uid in resource.data.organizerIds;
+      allow create: if signedIn()
+        && validSession(request.resource.data)
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.organizerIds == [request.auth.uid]
+        && request.resource.data.status == 'live'
+        && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && request.auth.uid in resource.data.organizerIds
+        && validSession(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && (request.auth.uid == resource.data.ownerId
+            || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'organizerIds']))
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.ownerId in request.resource.data.organizerIds
+        // 3a: organizerIds is fixed (co-organizers arrive in 3c).
+        && request.resource.data.organizerIds == resource.data.organizerIds;
+      allow delete: if signedIn() && request.auth.uid == resource.data.ownerId;
+
+      // Players in this session. 3a: organizers add name-only guests; player
+      // self check-in arrives in 3b.
+      match /participants/{pid} {
+        allow read: if signedIn();
+        allow create, update: if isOrganizer(sid)
+          && request.resource.data.keys().hasOnly(['uid', 'isGuest', 'displayName', 'selfRating', 'status', 'checkedInAt', 'clientAt'])
+          && request.resource.data.displayName is string
+          && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 40
+          && request.resource.data.status in ['here', 'break', 'left']
+          && request.resource.data.isGuest == true && request.resource.data.uid == null
+          && pid.matches('^g_[A-Za-z0-9_-]{4,40}$');
+        allow delete: if isOrganizer(sid);
+      }
+
+      // Games. The host creates them (only while the session is live); organizers
+      // score, swap or cancel — also after the session ended, so games left on
+      // court can be finished. A game never goes back to 'playing' once it has
+      // ended (stops a stale host from overwriting a scored game with a fresh one).
+      match /matches/{mid} {
+        allow read: if true;
+        allow create: if isOrganizer(sid) && validMatch(request.resource.data)
+          && request.resource.data.status == 'playing'
+          && sessionDoc(sid).status == 'live';
+        allow update: if isOrganizer(sid) && validMatch(request.resource.data)
+          && !(resource.data.status != 'playing' && request.resource.data.status == 'playing');
+        allow delete: if isOrganizer(sid);
+      }
+
+      // The host-computed view everyone watches (TV, organizer screens). Only
+      // live/state exists; it is written only while the session is live.
+      match /live/state {
+        allow read: if true;
+        allow create, update: if isOrganizer(sid)
+          && sessionDoc(sid).status == 'live'
+          && request.resource.data.keys().hasOnly(['mode', 'courts', 'queue', 'names', 'updatedAt', 'hostDeviceId', 'version']);
+        allow delete: if isOrganizer(sid);
+      }
+    }
+
+    function validMatch(d) {
+      return d.keys().hasOnly(['courtId', 'team1', 'team2', 'names', 'startedAt', 'endedAt', 'score', 'submittedBy',
+          'respondedBy', 'streaks', 'loggedSig', 'loggedRid', 'status', 'overriddenBy', 'clientAt'])
+        && d.courtId is string && d.team1 is list && d.team2 is list
+        && d.team1.size() <= 2 && d.team2.size() <= 2
+        && d.status in ['playing', 'submitted', 'confirmed', 'disputed', 'overridden', 'cancelled']
+        && isNum(d.startedAt) && optNum(d.get('endedAt', null))
+        && (d.get('score', null) == null
+            || (d.score is map && d.score.t1 is int && d.score.t2 is int
+                && d.score.t1 >= 0 && d.score.t1 <= 99 && d.score.t2 >= 0 && d.score.t2 <= 99));
+    }
   }
 }

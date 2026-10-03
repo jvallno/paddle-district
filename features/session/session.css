@@ -1,0 +1,81 @@
+/* Organizer session view (#/s/{sid}) */
+.session__head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-2); flex-wrap: wrap; }
+.session__title { min-width: 0; }
+.session__status { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.session__clock { font-size: 1.4rem; font-weight: 800; }
+.sync-dot { font-size: 0.75rem; font-weight: 700; color: var(--color-muted); display: inline-flex; align-items: center; gap: 6px; }
+.sync-dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--color-success); }
+.sync-dot[data-state="syncing"]::before { background: var(--color-highlight); }
+.sync-dot[data-state="offline"]::before { background: var(--color-danger); }
+
+.session__banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; padding: 10px var(--space-3); border-radius: var(--radius); font-weight: 700; font-size: 0.88rem; background: var(--color-tint); color: var(--color-text); }
+.session__banner--waiting, .session__banner--other { background: var(--color-surface-2); color: var(--color-muted); }
+.session__banner--ended { border-left: 5px solid var(--color-highlight); }
+
+.tabs { display: flex; gap: 0; overflow-x: auto; border-bottom: 2px solid var(--color-border); scrollbar-width: none; }
+.tabs__tab { flex: 1 0 auto; font: inherit; font-weight: 700; font-size: 0.85rem; min-height: var(--tap); padding: 0 6px; border: 0; background: none; color: var(--color-muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+.tabs__tab[aria-selected="true"] { color: var(--color-text); border-bottom-color: var(--color-primary); }
+.tabs__tab:focus-visible { outline: 3px solid var(--color-focus); outline-offset: -3px; }
+.tabs__panel { display: flex; flex-direction: column; gap: var(--space-3); }
+.tabs__panel[hidden] { display: none; }
+.session .btn[hidden] { display: none; } /* .btn's display would beat the hidden attribute */
+
+/* Courts */
+.courts { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }
+.court { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-3); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: var(--space-2); }
+.court--playing { border-top: 5px solid var(--color-accent); }
+.court--paused { opacity: 0.75; }
+.court__head { display: flex; align-items: center; gap: var(--space-2); }
+.court__name { font-size: 1.05rem; flex: 1; }
+.court__timer { font-weight: 800; color: var(--color-muted); }
+.court__teams { display: flex; flex-direction: column; gap: 4px; }
+.court__vs { font-size: 0.72rem; font-weight: 800; color: var(--color-muted); text-transform: uppercase; }
+.court__empty { color: var(--color-muted); font-weight: 600; }
+.court__actions, .court__tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.court__tools { border-top: 1px solid var(--color-border); padding-top: var(--space-2); }
+.team { font-weight: 800; padding: 6px 10px; border-radius: var(--radius); }
+.team--1 { background: var(--color-primary); color: var(--color-on-dark); }
+.team--2 { background: var(--color-highlight); color: var(--color-highlight-ink); }
+.team__amp { font-weight: 500; }
+.up-next { margin: 0; padding-left: 1.4em; display: grid; grid-template-columns: 1fr 1fr; gap: 4px var(--space-3); font-weight: 700; }
+
+/* Players */
+.roster-form { display: flex; flex-direction: column; gap: var(--space-2); }
+.roster-form__text { resize: vertical; min-height: 110px; }
+.players__head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+.player-list, .queue-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.player-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: 6px 0; border-bottom: 1px solid var(--color-border); flex-wrap: wrap; }
+.player-row--here { background: linear-gradient(90deg, var(--color-tint), transparent 60%); }
+.player-row--left .player-row__name { color: var(--color-muted); text-decoration: line-through; }
+.player-row__name { font-weight: 700; min-width: 0; padding-left: 6px; }
+.player-row__where { font-size: 0.75rem; font-weight: 700; color: var(--color-muted); }
+.queue-list { list-style: decimal; padding-left: 1.6em; gap: 2px; font-weight: 600; }
+.queue-list__next { font-weight: 800; color: var(--color-text); }
+.queue-list__next::marker { color: var(--color-highlight); }
+
+/* Scores */
+.history { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.history__row { display: grid; grid-template-columns: 1fr auto; gap: 4px var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); align-items: center; }
+.history__meta { grid-column: 1 / -1; font-size: 0.75rem; font-weight: 700; color: var(--color-muted); }
+.history__teams { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.history__score { font-size: 1.1rem; }
+
+.score-form { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: var(--space-2); }
+.score-form__input { font-size: 1.6rem; font-weight: 800; text-align: center; }
+.score-form__vs { font-size: 1.6rem; font-weight: 800; padding-bottom: 8px; }
+
+/* Rankings (also used by the TV view) */
+.rankings-wrap { overflow-x: auto; }
+.rankings { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.rankings th, .rankings td { padding: 8px 6px; text-align: right; border-bottom: 1px solid var(--color-border); }
+.rankings thead th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-muted); }
+.rankings th[scope="row"], .rankings thead th:nth-child(2) { text-align: left; }
+.rankings tbody tr:nth-child(-n+3) td:first-child { color: var(--color-highlight); font-weight: 800; }
+
+/* Settings */
+.settings__rule, .settings__share, .settings__export, .settings__end { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.settings__rule .field, .settings__link { width: 100%; }
+.settings__link { display: flex; gap: var(--space-2); }
+.settings__row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.settings__qr { width: 200px; max-width: 100%; background: var(--color-qr-bg); padding: 8px; border-radius: var(--radius); }
+.settings__qr svg { display: block; width: 100%; height: auto; }

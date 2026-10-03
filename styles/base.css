@@ -106,3 +106,24 @@ a { color: var(--color-link); }
 .env-badge { position: fixed; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 900; pointer-events: none; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; box-shadow: var(--shadow-md); }
 .env-badge--live { background: var(--color-danger); color: var(--color-on-dark); }
 .env-badge--sandbox { background: var(--color-accent); color: var(--color-accent-ink); }
+
+/* Choice rows (radio cards), checkboxes and segmented buttons — shared by forms and dialogs */
+.choice { display: flex; align-items: flex-start; gap: var(--space-2); padding: 10px 12px; min-height: var(--tap); border: 1.5px solid var(--color-border); border-radius: var(--radius); cursor: pointer; background: var(--color-input); }
+.choice:has(input:checked) { border-color: var(--color-primary); background: var(--color-tint); }
+.choice input { margin-top: 4px; accent-color: var(--color-primary); }
+.choice > span { display: flex; flex-direction: column; }
+.choice__hint { color: var(--color-muted); font-size: 0.85rem; font-weight: 500; }
+.check { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap); font-weight: 600; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--color-primary); }
+.seg { display: inline-flex; border: 1.5px solid var(--color-border); border-radius: var(--radius-full); overflow: hidden; background: var(--color-input); flex: none; }
+.seg__btn { font: inherit; font-size: 0.8rem; font-weight: 700; min-height: var(--tap); padding: 0 12px; border: 0; background: transparent; color: var(--color-muted); cursor: pointer; }
+.seg__btn + .seg__btn { border-left: 1px solid var(--color-border); }
+.seg__btn[aria-pressed="true"] { background: var(--color-primary); color: var(--color-on-dark); }
+.seg__btn:focus-visible { outline: 3px solid var(--color-focus); outline-offset: -3px; }
+.seg__btn:disabled { cursor: default; opacity: 0.7; }
+.seg--wide { display: flex; margin-bottom: var(--space-3); }
+.seg--wide .seg__btn { flex: 1; }
+.dialog__body { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-2); }
+.dialog__choices { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.dialog__error { margin-bottom: var(--space-2); }
+.page--wide { max-width: 960px; }

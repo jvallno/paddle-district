@@ -114,7 +114,7 @@ test('attack: delete a profile or free a handle', async () => {
 test('attack: repoint a handle', async () => {
   await assertFails(setDoc(doc(as('ana'), 'handles/ana'), { uid: 'ben' }));
 });
-test('attack: anything outside users/handles', async () => {
+test('attack: malformed session doc; results not open yet', async () => {
   await assertFails(setDoc(doc(as('ana'), 'sessions/s1'), { ownerId: 'ana' }));
   await assertFails(getDoc(doc(as('ana'), 'results/r1')));
 });
@@ -169,4 +169,175 @@ test('signed-in player can query profiles by handle', async () => {
 });
 test('search profiles with a limit of 25', async () => {
   await assertSucceeds(getDocs(query(collection(as('ben'), 'users'), where('handle', '>=', 'a'), where('handle', '<', 'b'), limit(25))));
+});
+
+// ── Sessions (spec §13.5) ───────────────────────────────────────────────────
+// ana owns session s1 (with a guest g_ana1 and a live game c1_1); carl is a
+// signed-in stranger; anon is the public TV view.
+const sessionData = (over = {}) => ({
+  name: 'Sat Open', date: '2026-10-04', venue: 'Elm', ownerId: 'ana', organizerIds: ['ana'],
+  courts: [{ id: 'c1', name: 'Court 1', paused: false }], mode: 'fairness',
+  courtRule: { type: 'everyoneOff', maxWins: 2 }, guestsAllowed: true, status: 'live', host: null,
+  shareQr: true, startedAt: 1000, endedAt: null, createdAt: serverTimestamp(), ...over,
+});
+const guest = (over = {}) => ({ uid: null, isGuest: true, displayName: 'Dana', selfRating: null, status: 'here', checkedInAt: 1, clientAt: 1, ...over });
+const game = (over = {}) => ({
+  courtId: 'c1', team1: ['g_ana1', 'g_ana2'], team2: ['g_ana3', 'g_ana4'], names: {}, startedAt: 2000,
+  endedAt: null, score: null, status: 'playing', streaks: {}, clientAt: 2000, ...over,
+});
+
+async function seedSession() {
+  await env.withSecurityRulesDisabled(async (c) => {
+    const db = c.firestore();
+    await setDoc(doc(db, 'sessions/s1'), sessionData({ createdAt: new Date(0) }));
+    await setDoc(doc(db, 'sessions/s1/participants/g_ana1'), guest());
+    await setDoc(doc(db, 'sessions/s1/matches/c1_1'), game());
+    await setDoc(doc(db, 'sessions/s1/live/state'), { courts: [], queue: [], names: {} });
+  });
+}
+
+test('attack: list sessions you do not organize', async () => {
+  await seedSession();
+  await assertFails(getDocs(collection(as('carl'), 'sessions')));
+  await assertFails(getDocs(query(collection(anon(), 'sessions'), where('organizerIds', 'array-contains', 'ana'))));
+  await assertFails(getDocs(query(collection(as('carl'), 'sessions'), where('organizerIds', 'array-contains', 'ana'))));
+});
+test('attack: create a session owned by someone else or with extra organizers', async () => {
+  await assertFails(setDoc(doc(as('carl'), 'sessions/s2'), sessionData()));
+  await assertFails(setDoc(doc(as('carl'), 'sessions/s2'), sessionData({ ownerId: 'carl', organizerIds: ['carl', 'ana'] })));
+  await assertFails(setDoc(doc(anon(), 'sessions/s2'), sessionData({ ownerId: 'carl', organizerIds: ['carl'] })));
+});
+test('attack: create a malformed session', async () => {
+  for (const bad of [{ name: '' }, { courts: [] }, { mode: 'chaos' }, { status: 'ended' }, { date: 'tomorrow' }, { extra: 1 }, { createdAt: new Date(0) }]) {
+    await assertFails(setDoc(doc(as('carl'), 'sessions/s2'), sessionData({ ownerId: 'carl', organizerIds: ['carl'], ...bad })), JSON.stringify(bad));
+  }
+});
+test("attack: edit, end or delete someone else's session", async () => {
+  await seedSession();
+  await assertFails(updateDoc(doc(as('carl'), 'sessions/s1'), { name: 'Mine now' }));
+  await assertFails(updateDoc(doc(as('carl'), 'sessions/s1'), { status: 'ended' }));
+  await assertFails(deleteDoc(doc(as('carl'), 'sessions/s1')));
+});
+test('attack: owner hands the session away or rewrites createdAt', async () => {
+  await seedSession();
+  await assertFails(updateDoc(doc(as('ana'), 'sessions/s1'), { ownerId: 'carl', organizerIds: ['carl'] }));
+  await assertFails(updateDoc(doc(as('ana'), 'sessions/s1'), { organizerIds: ['carl'] }));
+  await assertFails(updateDoc(doc(as('ana'), 'sessions/s1'), { createdAt: new Date(5) }));
+});
+test('attack: owner adds organizers (organizerIds is fixed until 3c)', async () => {
+  await seedSession();
+  await assertFails(updateDoc(doc(as('ana'), 'sessions/s1'), { organizerIds: ['ana', 'carl'] }));
+});
+test('attack: organizer creates a game or writes the live state on an ended session', async () => {
+  await seedSession();
+  await updateDoc(doc(as('ana'), 'sessions/s1'), { status: 'ended', endedAt: 9000, host: null });
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/matches/c1_2'), game()));
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/live/state'), { courts: [], queue: [], names: {} }));
+});
+test('attack: organizer writes another live doc or extra live/state keys', async () => {
+  await seedSession();
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/live/other'), { courts: [], queue: [], names: {} }));
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/live/state'), { courts: [], queue: [], names: {}, junk: 'x'.repeat(100) }));
+});
+test('attack: stranger adds, edits or reads players', async () => {
+  await seedSession();
+  await assertFails(setDoc(doc(as('carl'), 'sessions/s1/participants/g_carl1'), guest()));
+  await assertFails(updateDoc(doc(as('carl'), 'sessions/s1/participants/g_ana1'), { status: 'left' }));
+  await assertFails(getDoc(doc(anon(), 'sessions/s1/participants/g_ana1')));
+});
+test('attack: organizer writes a non-guest or malformed participant (3a is guests only)', async () => {
+  await seedSession();
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/participants/ben'), guest({ uid: 'ben', isGuest: false })));
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/participants/g_x'), guest()));
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/participants/g_dana1'), guest({ status: 'vip' })));
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/participants/g_dana1'), guest({ displayName: '' })));
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/participants/g_dana1'), guest({ uid: 'ben' })));
+});
+test('attack: stranger creates, scores or deletes games, or writes the live state', async () => {
+  await seedSession();
+  await assertFails(setDoc(doc(as('carl'), 'sessions/s1/matches/c1_2'), game()));
+  await assertFails(updateDoc(doc(as('carl'), 'sessions/s1/matches/c1_1'), { status: 'overridden', score: { t1: 11, t2: 0 } }));
+  await assertFails(deleteDoc(doc(as('carl'), 'sessions/s1/matches/c1_1')));
+  await assertFails(setDoc(doc(as('carl'), 'sessions/s1/live/state'), { courts: [] }));
+  await assertFails(setDoc(doc(anon(), 'sessions/s1/live/state'), { courts: [] }));
+});
+test('attack: an ended game goes back to playing, or a bad score', async () => {
+  await seedSession();
+  await updateDoc(doc(as('ana'), 'sessions/s1/matches/c1_1'), { status: 'overridden', score: { t1: 11, t2: 4 }, endedAt: 3000 });
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/matches/c1_1'), game()));
+  await assertFails(updateDoc(doc(as('ana'), 'sessions/s1/matches/c1_1'), { score: { t1: 100, t2: 4 } }));
+  await assertFails(updateDoc(doc(as('ana'), 'sessions/s1/matches/c1_1'), { score: { t1: 11.5, t2: 4 } }));
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/matches/c1_2'), game({ status: 'overridden' })));
+  await assertFails(setDoc(doc(as('ana'), 'sessions/s1/matches/c1_3'), game({ hacked: true })));
+});
+
+test('owner creates, lists, edits, ends, continues and deletes a session', async () => {
+  const db = as('ana');
+  await assertSucceeds(setDoc(doc(db, 'sessions/s2'), sessionData()));
+  await assertSucceeds(getDocs(query(collection(db, 'sessions'), where('organizerIds', 'array-contains', 'ana'))));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s2'), { courts: [{ id: 'c1', name: 'Center', paused: true }], courtRule: { type: 'winnersStay', maxWins: 3 }, shareQr: false }));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s2'), { host: { deviceId: 'd1', uid: 'ana', beatAt: 5, version: 1 } }));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s2'), { status: 'ended', endedAt: 9000, host: null }));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s2'), { status: 'live', endedAt: null }));
+  await assertSucceeds(deleteDoc(doc(db, 'sessions/s2')));
+});
+test('host claims the lease in a transaction', async () => {
+  await seedSession();
+  const { runTransaction } = await import('firebase/firestore');
+  const db = as('ana');
+  await assertSucceeds(runTransaction(db, async (tx) => {
+    const s = await tx.get(doc(db, 'sessions/s1'));
+    tx.update(s.ref, { host: { deviceId: 'd1', uid: 'ana', beatAt: 5, version: (s.data().host?.version ?? 0) + 1 } });
+  }));
+});
+test('anyone can read a session, its games and live state (TV view)', async () => {
+  await seedSession();
+  await assertSucceeds(getDoc(doc(anon(), 'sessions/s1')));
+  await assertSucceeds(getDocs(collection(anon(), 'sessions/s1/matches')));
+  await assertSucceeds(getDoc(doc(anon(), 'sessions/s1/live/state')));
+});
+test('organizer runs the floor: guests, games, scores, swaps, cancels, live state', async () => {
+  await seedSession();
+  const db = as('ana');
+  const b = writeBatch(db);
+  b.set(doc(db, 'sessions/s1/participants/g_dana1'), guest());
+  b.set(doc(db, 'sessions/s1/participants/g_eve01'), guest({ displayName: 'Eve', status: 'break' }));
+  await assertSucceeds(b.commit());
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1/participants/g_dana1'), { status: 'left', clientAt: 2 }));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1/matches/c1_1'), { team2: ['g_ana3', 'g_dana1'], names: { g_dana1: 'Dana' }, clientAt: 3 }));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1/matches/c1_1'), { status: 'overridden', score: { t1: 11, t2: 9 }, overriddenBy: 'ana', endedAt: 4000 }));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1/matches/c1_1'), { score: { t1: 11, t2: 7 } }));
+  const h = writeBatch(db);
+  h.set(doc(db, 'sessions/s1/matches/c1_2'), game({ startedAt: 5000 }));
+  h.set(doc(db, 'sessions/s1/live/state'), { courts: [], queue: [], names: {}, hostDeviceId: 'd1', version: 1 });
+  await assertSucceeds(h.commit());
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1/matches/c1_2'), { status: 'cancelled', endedAt: 6000, clientAt: 6000 }));
+});
+test('owner deletes a session: children first, then the session', async () => {
+  await seedSession();
+  const db = as('ana');
+  const b = writeBatch(db);
+  b.delete(doc(db, 'sessions/s1/participants/g_ana1'));
+  b.delete(doc(db, 'sessions/s1/matches/c1_1'));
+  b.delete(doc(db, 'sessions/s1/live/state'));
+  await assertSucceeds(b.commit());
+  await assertSucceeds(deleteDoc(doc(db, 'sessions/s1')));
+});
+test('owner deletes an ended session: children first, then the session', async () => {
+  await seedSession();
+  const db = as('ana');
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1'), { status: 'ended', endedAt: 9000, host: null }));
+  const b = writeBatch(db);
+  b.delete(doc(db, 'sessions/s1/participants/g_ana1'));
+  b.delete(doc(db, 'sessions/s1/matches/c1_1'));
+  b.delete(doc(db, 'sessions/s1/live/state'));
+  await assertSucceeds(b.commit());
+  await assertSucceeds(deleteDoc(doc(db, 'sessions/s1')));
+});
+test('organizer scores or cancels a game left on court after the session ended', async () => {
+  await seedSession();
+  const db = as('ana');
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1'), { status: 'ended', endedAt: 9000, host: null }));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1/matches/c1_1'), { status: 'overridden', score: { t1: 11, t2: 9 }, overriddenBy: 'ana', endedAt: 9500 }));
+  await assertSucceeds(updateDoc(doc(db, 'sessions/s1/matches/c1_1'), { score: { t1: 11, t2: 7 } }));
 });
