@@ -1,5 +1,6 @@
 // Courts tab: live courts with timers; score / swap / cancel; add, rename and
-// pause courts; "Up next" from the host's live state.
+// pause courts; "Up next" from the host's live state. After the session ends,
+// games still on court can be scored or cancelled (no timer, swap or tools).
 import { html } from '../../lib/html.js';
 import { formatClock } from '../../lib/time-format.js';
 import { showToast } from '../../lib/toast.js';
@@ -14,16 +15,16 @@ function courtHtml(court, match, holding, live, ended) {
     <article class="court ${match ? 'court--playing' : ''} ${court.paused ? 'court--paused' : ''}">
       <header class="court__head">
         <h2 class="court__name">${court.name}</h2>
-        ${match ? html`<span class="court__timer num" data-since="${match.startedAt}"></span>` : ''}
+        ${match && !ended ? html`<span class="court__timer num" data-since="${match.startedAt}"></span>` : ''}
         ${court.paused ? html`<span class="pill">Paused</span>` : ''}
       </header>
       ${match
         ? html`<div class="court__teams">${teamHtml(match, 'team1')}<span class="court__vs">vs</span>${teamHtml(match, 'team2')}</div>
-            ${ended ? '' : html`<div class="court__actions">
+            <div class="court__actions">
               <button type="button" class="btn btn--primary btn--sm" data-score="${match.mid}">Enter score</button>
-              <button type="button" class="btn btn--secondary btn--sm" data-swap="${match.mid}">Swap</button>
+              ${ended ? '' : html`<button type="button" class="btn btn--secondary btn--sm" data-swap="${match.mid}">Swap</button>`}
               <button type="button" class="btn btn--ghost btn--sm" data-cancel="${match.mid}">Cancel match</button>
-            </div>`}`
+            </div>`
         : html`<p class="court__empty">${court.paused ? 'Paused — no new games here.'
           : holding.length ? html`Winners waiting: ${holding.map((p) => names[p] ?? '?').join(' & ')}`
             : 'Waiting for players…'}</p>`}

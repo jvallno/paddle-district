@@ -18,6 +18,7 @@
 .tabs__tab:focus-visible { outline: 3px solid var(--color-focus); outline-offset: -3px; }
 .tabs__panel { display: flex; flex-direction: column; gap: var(--space-3); }
 .tabs__panel[hidden] { display: none; }
+.session .btn[hidden] { display: none; } /* .btn's display would beat the hidden attribute */
 
 /* Courts */
 .courts { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }

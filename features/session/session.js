@@ -31,7 +31,13 @@ const HOST_TEXT = {
 };
 const SYNC_TEXT = { saved: 'Saved', syncing: 'Syncing…', offline: 'Offline — changes will sync' };
 
+const notFoundHtml = () => html`
+  <h1 class="page__title">Session not found</h1>
+  <p class="page__sub">It may have been deleted, or the link is incomplete.</p>
+  <a class="btn btn--primary" href="#/home">Back to my sessions</a>`;
+
 export function init(container, sid) {
+  if (!sid) { container.innerHTML = html`<section class="page page--wide session">${notFoundHtml()}</section>`; return; }
   const { user } = getSession();
   container.innerHTML = html`<section class="page page--wide session"><p class="page__sub">Loading session…</p></section>`;
   const root = container.querySelector('.session');
@@ -121,10 +127,9 @@ export function init(container, sid) {
   function onData(patch) {
     Object.assign(ctx, patch);
     if (ctx.session === null) {
-      root.innerHTML = html`
-        <h1 class="page__title">Session not found</h1>
-        <p class="page__sub">It may have been deleted, or the link is incomplete.</p>
-        <a class="btn btn--primary" href="#/home">Back to my sessions</a>`;
+      stopAll(); // deleted: stop the host and watchers so nothing writes or toasts
+      tabs = null;
+      root.innerHTML = notFoundHtml();
       return;
     }
     if (!ctx.session) return;

@@ -9,18 +9,35 @@ import { rankingsHtml } from '../shared/rankings-table.js';
 
 const teamText = (names, pids) => pids.map((p) => names?.[p] ?? '?').join(' & ');
 
-function courtsHtml(live, session) {
-  const courts = live?.courts ?? session.courts.map((c) => ({ courtId: c.id, name: c.name, paused: c.paused, team1: [], team2: [] }));
+// Ended sessions: the host has stopped, so live/state is stale — show the games
+// still on court straight from the match docs (they can still be scored or
+// cancelled), with no ticking timers.
+function endedCourts(session, matches) {
+  const byCourt = new Map(matches.filter((m) => m.status === 'playing').map((m) => [m.courtId, m]));
+  return session.courts.map((c) => {
+    const m = byCourt.get(c.id);
+    return { courtId: c.id, name: c.name, paused: c.paused, matchId: m?.mid ?? null, team1: m?.team1 ?? [], team2: m?.team2 ?? [], names: m?.names };
+  });
+}
+
+function courtsHtml(live, session, matches) {
+  const ended = session.status === 'ended';
+  const courts = ended ? endedCourts(session, matches)
+    : live?.courts ?? session.courts.map((c) => ({ courtId: c.id, name: c.name, paused: c.paused, team1: [], team2: [] }));
   return html`${courts.map((c) => html`
     <article class="tv-court ${c.matchId ? 'tv-court--playing' : ''}">
-      <header class="tv-court__head"><h2>${c.name}</h2>${c.matchId && c.startedAt ? html`<span class="num" data-since="${c.startedAt}">${formatClock(Date.now() - c.startedAt)}</span>` : ''}</header>
+      <header class="tv-court__head"><h2>${c.name}</h2>${c.matchId && c.startedAt && !ended ? html`<span class="num" data-since="${c.startedAt}">${formatClock(Date.now() - c.startedAt)}</span>` : ''}</header>
       ${c.matchId
-        ? html`<p class="tv-court__team tv-court__team--1">${teamText(live.names, c.team1)}</p><p class="tv-court__vs">vs</p><p class="tv-court__team tv-court__team--2">${teamText(live.names, c.team2)}</p>`
+        ? html`<p class="tv-court__team tv-court__team--1">${teamText(c.names ?? live?.names, c.team1)}</p><p class="tv-court__vs">vs</p><p class="tv-court__team tv-court__team--2">${teamText(c.names ?? live?.names, c.team2)}</p>`
         : html`<p class="tv-court__empty">${c.paused ? 'Paused' : 'Waiting for players'}</p>`}
     </article>`)}`;
 }
 
 export function init(container, sid) {
+  if (!sid) {
+    container.innerHTML = html`<section class="tv"><h1 class="tv__title">Session not found</h1><p class="tv__sub">Check the link with your organizer.</p></section>`;
+    return;
+  }
   document.body.classList.add('tv-mode');
   const prevTheme = document.documentElement.dataset.theme;
   document.documentElement.dataset.theme = 'dark';
@@ -32,7 +49,7 @@ export function init(container, sid) {
 
   function draw() {
     const s = data.session;
-    if (s === null) { root.innerHTML = html`<h1 class="tv__title">Session not found</h1><p class="tv__sub">Check the link with your organizer.</p>`; drawn = false; return; }
+    if (s === null) { root.innerHTML = html`<h1 class="tv__title">Session not found</h1><p class="tv__sub">Check the link with your organizer.</p>`; drawn = false; qrUrl = null; return; }
     if (!s) return;
     if (!drawn) {
       root.innerHTML = html`
@@ -44,9 +61,9 @@ export function init(container, sid) {
         <div class="tv__grid">
           <section class="tv__courts" data-courts aria-label="Courts"></section>
           <aside class="tv__side">
-            <section class="tv-card"><h2>Up next</h2><ol class="tv-next" data-next></ol></section>
-            <section class="tv-card"><h2>Rankings</h2><div data-rank></div></section>
+            <section class="tv-card" data-next-card><h2>Up next</h2><ol class="tv-next" data-next></ol></section>
             <section class="tv-card tv-card--qr" data-qr-card hidden><h2>Follow on your phone</h2><div class="tv__qr" data-qr></div></section>
+            <section class="tv-card"><h2>Rankings</h2><div data-rank></div></section>
           </aside>
         </div>`;
       drawn = true;
@@ -54,7 +71,8 @@ export function init(container, sid) {
     root.querySelector('[data-name]').textContent = s.name;
     root.querySelector('[data-meta]').textContent = [s.venue, s.status === 'ended' ? 'Session ended' : null].filter(Boolean).join(' · ');
     document.title = `${s.name} · Live · Paddle District`;
-    root.querySelector('[data-courts]').innerHTML = courtsHtml(data.live, s);
+    root.querySelector('[data-courts]').innerHTML = courtsHtml(data.live, s, data.matches);
+    root.querySelector('[data-next-card]').hidden = s.status === 'ended';
     const next = (data.live?.queue ?? []).slice(0, 8).flatMap((q) => q.pids);
     root.querySelector('[data-next]').innerHTML = next.length
       ? html`${next.map((pid, i) => html`<li class="${i < 4 ? 'tv-next--soon' : ''}">${data.live.names?.[pid] ?? '?'}</li>`)}`
@@ -69,11 +87,21 @@ export function init(container, sid) {
     }
   }
 
-  const unsubs = [
-    watchSession(sid, (s, err) => { if (!err) { data.session = s; draw(); } }),
-    watchLiveState(sid, (st, err) => { if (!err) { data.live = st; draw(); } }),
-    watchMatches(sid, (list, err) => { if (!err) { data.matches = list; draw(); } }),
-  ];
+  // A watcher error (e.g. no connection, permission) replaces the view with a retry.
+  let failed = false;
+  function showError() {
+    if (failed) return;
+    failed = true;
+    unsubs.forEach((u) => u());
+    root.innerHTML = html`<h1 class="tv__title">Can't load the live view</h1><p class="tv__sub">Check the connection, then try again.</p><button type="button" class="btn btn--primary" data-retry>Try again</button>`;
+    root.querySelector('[data-retry]').addEventListener('click', () => window.location.reload());
+  }
+  const unsubs = [];
+  unsubs.push(
+    watchSession(sid, (s, err) => { if (err) showError(); else if (!failed) { data.session = s; draw(); } }),
+    watchLiveState(sid, (st, err) => { if (err) showError(); else if (!failed) { data.live = st; draw(); } }),
+    watchMatches(sid, (list, err) => { if (err) showError(); else if (!failed) { data.matches = list; draw(); } }),
+  );
   const tick = setInterval(() => {
     const s = data.session;
     const clock = root.querySelector('[data-clock]');
