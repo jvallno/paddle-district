@@ -28,6 +28,7 @@ export function mount(panel, ctx) {
       </label>
       <label class="field" data-maxwins><span class="field__label">Max wins in a row</span>
         <input class="input" type="number" name="maxWins" min="1" max="5" step="1" inputmode="numeric">
+        <span class="field__error" data-maxwins-error aria-live="polite"></span>
       </label>
       <button class="btn btn--primary" type="submit">Save rule</button>
     </form>
@@ -54,12 +55,22 @@ export function mount(panel, ctx) {
 
   const ruleForm = panel.querySelector('[data-rule]');
   const syncMaxWins = () => { panel.querySelector('[data-maxwins]').hidden = ruleForm.elements.type.value === 'everyoneOff'; };
+  const maxInput = ruleForm.elements.maxWins;
+  const maxErr = ruleForm.querySelector('[data-maxwins-error]');
+  const clearMaxErr = () => { maxErr.textContent = ''; maxInput.setAttribute('aria-invalid', 'false'); };
+  maxInput.addEventListener('input', clearMaxErr);
   ruleForm.addEventListener('change', syncMaxWins);
   ruleForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const type = ruleForm.elements.type.value;
     const maxWins = Number(ruleForm.elements.maxWins.value);
-    if (type !== 'everyoneOff' && (!Number.isInteger(maxWins) || maxWins < 1 || maxWins > 5)) { showToast('Max wins: 1 to 5.', 'error'); return; }
+    if (type !== 'everyoneOff' && (!Number.isInteger(maxWins) || maxWins < 1 || maxWins > 5)) {
+      maxErr.textContent = 'Max wins: 1 to 5.';
+      maxInput.setAttribute('aria-invalid', 'true');
+      maxInput.focus();
+      return;
+    }
+    clearMaxErr();
     ctx.sync.track(updateSession(ctx.sid, { courtRule: { type, maxWins: type === 'everyoneOff' ? 2 : maxWins } }))
       .catch((err) => showToast(`Couldn't save: ${err.message}`, 'error'));
     showToast('Court rule saved — it applies from the next game.', 'success');

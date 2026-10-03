@@ -25,6 +25,7 @@ export function mount(panel, ctx) {
         <span class="field__label">Add players</span>
         <textarea class="input roster-form__text" name="names" rows="4" placeholder="Paste your list — one name per line"></textarea>
         <span class="field__hint">Numbering, headers and @mentions from a group-chat list are ignored. Names already here are skipped.</span>
+        <span class="field__error" data-roster-error aria-live="polite"></span>
       </label>
       <label class="check"><input type="checkbox" name="here" checked> Mark everyone here</label>
       <button class="btn btn--primary" type="submit">Add players</button>
@@ -45,10 +46,20 @@ export function mount(panel, ctx) {
     </section>`;
 
   const form = panel.querySelector('[data-roster]');
+  const area = form.elements.names;
+  const errEl = form.querySelector('[data-roster-error]');
+  const clearError = () => { errEl.textContent = ''; area.setAttribute('aria-invalid', 'false'); };
+  area.addEventListener('input', clearError);
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const { add, skipped } = dedupeNames(parseNames(form.elements.names.value), ctx.participants.map((p) => p.displayName));
-    if (!add.length) { showToast(skipped ? 'Everyone on that list is already here.' : 'No names found — one name per line.'); return; }
+    if (!add.length) {
+      errEl.textContent = skipped ? 'Everyone on that list is already here.' : 'No names found — one name per line.';
+      area.setAttribute('aria-invalid', 'true');
+      area.focus();
+      return;
+    }
+    clearError();
     ctx.sync.track(addGuests(ctx.sid, add, form.elements.here.checked ? 'here' : 'break'))
       .catch((err) => showToast(`Couldn't add players: ${err.message}`, 'error'));
     form.elements.names.value = '';
